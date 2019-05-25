@@ -11,14 +11,14 @@ import java.util.TreeSet;
 
 public class A306597 {
 	
-	public static void main(String[] args) { new A306597().bfile(101, 200); }
+	public static void main(String[] args) { new A306597().bfile(1, 150); }
 
-	private void data() {
-		int n = 1; for (;;) { System.out.printf("%d, ", a(n ++)); }
+	private void data(int nMin, int nMax) {
+		for (int n = nMin; n <= nMax; n ++) { System.out.printf("%d, ", a(n)); }
 	}
 
 	private void bfile(int nMin, int nMax) {
-		try (FileWriter out = new FileWriter("b306597.txt");) {
+		try (FileWriter out = new FileWriter("b306597.txt")) {
 			for (int n = nMin; n <= nMax; n ++) {
 				out.write(String.format("%d %d\n", n, a(n)));
 				out.flush();
