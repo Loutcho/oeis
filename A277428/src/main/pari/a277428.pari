@@ -1,0 +1,8 @@
+g = (p, b) -> if (b == 1, p, 1/p)
+f = (s, n) -> prod(i = 0, n - 1, g(prime(i + 1), bittest(s, i)))
+a(n) = {
+	my(s, ss, bs = -1, x, bf = 0);
+	for (s = 0, 2^(n - 1) - 1, x = f(s, n) ; if (x < 1, ss = s, x = 1 / x ; ss = bitneg(s, n)) ; if (x > bf, bf = x ; bs = ss));
+	return(bs);
+}
+
