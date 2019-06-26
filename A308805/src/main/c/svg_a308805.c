@@ -1,21 +1,26 @@
 #include <stdio.h>
 #include <math.h>
 
-#define WIDTH 1800
+#define WIDTH 1600
 #define HEIGHT 900
 
-#define X_MAX 200
-#define Y_MAX 100
+#define SIDE_X 40
+#define SIDE_Y 40
 
-#define M_MAX 6
-#define N_MAX 11
+#define X_MAX ((WIDTH - SIDE_X / 2) / SIDE_X)
+#define Y_MAX ((HEIGHT - SIDE_Y / 2) / SIDE_Y)
 
-#define D_MAX 16
+#define M_MAX (Y_MAX / 2 + 1)
+#define N_MAX (X_MAX / 2 + 1)
+
+#define D_MAX (M_MAX + N_MAX + 1)
+
+#define RADIUS 10
 
 void c(double x, double y, int *xx, int *yy)
 {
-	*xx = (int) rint(40.0 + 80.0 * x);
-	*yy = HEIGHT - (int) rint(40.0 + 80.0 * y);
+	*xx = (int) rint(SIDE_X / 2 + SIDE_X * x);
+	*yy = HEIGHT - (int) rint(SIDE_Y / 2 + SIDE_Y * y);
 }
 
 void grid(FILE *f)
@@ -121,7 +126,7 @@ void circled_labels(FILE *f)
 				int y = (m - 1) * (n + 1);
 				int p = ((x + y) * (x + y) + 3 * x + y) / 2;
 				c(x, y, &xx, &yy);
-				fprintf(f, "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" style=\"fill:green;stroke:rgb(0,255,0);stroke-width:2;fill-opacity:0.5\"/>\n", xx, yy, 20);
+				fprintf(f, "<circle cx=\"%d\" cy=\"%d\" r=\"%d\" style=\"fill:green;stroke:rgb(0,127,0);stroke-width:2;fill-opacity:0.5\"/>\n", xx, yy, RADIUS);
 				fprintf(f, "<text x=\"%d\" y=\"%d\" font-weight=\"bold\" fill=\"black\">%d</text>\n", xx, yy, p);
 			}
 		}
@@ -130,17 +135,16 @@ void circled_labels(FILE *f)
 
 int main(int argc, char*argv[])
 {
-	int m, n, x, y, d;
-	FILE *f = fopen("C:\\Users\\Luc\\Desktop\\truc.html", "w+");
+	FILE *f = fopen("a308805.svg", "w+");
 
 	if (f == NULL)
 	{
 		fprintf(stderr, "Erreur\n");
 	}
 
-	fprintf(f, "<html>\n");
-	fprintf(f, "<body>\n");
-	fprintf(f, "<svg width=\"%d\" height=\"1000\">\n", WIDTH, HEIGHT);
+	fprintf(f, "<?xml version=\"1.0\" standalone=\"no\"?>\n");
+	fprintf(f, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
+	fprintf(f, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"%d\" height=\"%d\">\n", WIDTH, HEIGHT);
 			
 	grid(f);
 	green_antidiagonals(f);
@@ -150,8 +154,6 @@ int main(int argc, char*argv[])
 	circled_labels(f);
 
 	fprintf(f, "</svg>\n");
-	fprintf(f, "</body>\n");
-	fprintf(f, "</html>\n");
 
 	fclose(f);
 }
