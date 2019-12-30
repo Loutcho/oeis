@@ -15,23 +15,28 @@ import java.util.TreeSet;
 public class A123663 {
 
 	public static void main(String[] args) {
-		int n = 1;
+		int n = 0;
 		Set<Point> set = new TreeSet<>();
-		set.add(new Point(1, 1));
+		set.add(new Point(0, 0));
 		out(n, set.size());
 		n ++;
-		while (n <= 10000) {
+		while (n <= 18*18) {
 			set = evolve(n, set);
 			out(n, set.size());
 			n ++;
 		}
 	}
 
+	private static int f(int x, int y) {
+		// return x * y; // A123663
+		return x*x + y*y; // A101776 ???
+	}
+
 	private static Set<Point> evolve(int n, Set<Point> set) {
 		Set<Point> newSet = new TreeSet<>();
 		for (Point p: set) {
-			int xxy = n - (p.x + 1) * p.y;
-			int xyy = n - p.x * (p.y + 1);
+			int xxy = n - f(p.x + 1, p.y);
+			int xyy = n - f(p.x, p.y + 1);
 			if (xxy == 0) {
 				newSet.add(new Point(p.x + 1, p.y));
 			}
@@ -60,4 +65,10 @@ public class A123663 {
 	private static void out(int n, int a) {
 		System.out.printf("%d %d\n", n, a);
 	}
+	/*
+	private static void out(int n, int a) {
+		System.out.printf("%d, ", a);
+	}
+
+	 */
 }
