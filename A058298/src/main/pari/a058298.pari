@@ -1,0 +1,57 @@
+I had ALMOST the same idea as in A058298. Here is what I would have created, instead:
+
+A?????? (a new A-number)
+
+NAME:
+	Concatenation s(1) s(2) s(3) ..., where s(k) is (k!/k, k!/(k-1), ..., k!/2, k!/1), where equal endpoints are merged.
+
+DATA:
+1, 2, 3, 6, 8, 12, 24, 30, 40, 60, 120, 144, 180, 240, 360, 720, 840, 1008,
+1260, 1680, 2520, 5040, 5760, 6720, 8064, 10080, 13440, 20160, 40320, 45360,
+51840, 60480, 72576, 90720, 120960, 181440, 362880, 403200, 453600, 518400,
+604800, 725760, 907200, 1209600, 1814400
+
+OFFSET: 0
+
+COMMENTS:
+This sequence is essentially A058298 with 1 prepended, or A077012 with duplicates removed.
+The offset is chosen equal to 0 so that the formula a(C(k,2))=k! hold.
+
+EXAMPLE:
+
+                C(1,2)
+                |  C(2,2)
+                |  |     C(3,2)   C(4,2)      C(5,2)         C(6,2)            C(7,2)
+                |  |     |        |           |              |                 |
+n      :        0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 ...
+-------------------------------------------------------------------------------------
+factors: 1      *  *  X  *  X  X  *  X  X  X  *  X  X  X  X  *  X  X  X  X  X  * ...
+         2      .  X  o  X  X  o  X  X  X  o  X  X  X  X  o  X  X  X  X  X  o  X ...
+         3         .  X  X  o  X  X  X  o  X  X  X  X  o  X  X  X  X  X  o  X  X ...
+         4               .  X  X  X  o  X  X  X  X  o  X  X  X  X  X  o  X  X  X ...
+         5                        .  X  X  X  X  o  X  X  X  X  X  o  X  X  X  X ...
+         6                                    .  X  X  X  X  X  o  X  X  X  X  X ...
+         7                                                   .  X  X  X  X  X  X ...
+        ...                                                                    . ...
+-------------------------------------------------------------------------------------
+a(n)   :        1  2  3  6  8 12 24 30 40 60 ...
+                |  |     |        |           |              |                 |
+                1! 2!    3!       4!          5!             6!                7!
+with caption:
+C(n,k) = binomal coefficient
+X = slot present, factor present;
+o = slot present, factor missing;
+* = slot present; factor present or missing: it does not matter, since factor is 1;
+. = slot present or missing: it does not matter, since if slot is present, then factor is missing;
+
+FORMULA:
+a(C(k,2))=k!
+a(n)=<an explicit formula is possible -- just be careful in the taking the kind of triangular root of n>
+
+PROG:
+(PARI) for(n=1,10,for(i=1,n-1,my(k=n+1-i);print1(n!/k,", ")))
+
+CROSSREFS:
+Cf. A058298, A077012.
+
+
