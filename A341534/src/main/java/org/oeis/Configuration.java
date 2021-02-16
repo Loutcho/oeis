@@ -181,25 +181,35 @@ public class Configuration implements Comparable<Configuration> {
 		d = this.mapPointMultiplicity.toString().compareTo(that.mapPointMultiplicity.toString()); if (d != 0) { return d; }
 		return 0;
 	}
+
 	
-	public String prettyPrint() {
-		SortedMap<Integer, Set<Point>> mapScalarProductPoints = computeOrder();
+	public String prettyPrint(int nbT, int nbOneMinusT, int column, int row) {
 		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (Map.Entry<Integer, Set<Point>> entry : mapScalarProductPoints.entrySet()) {
-			if (first) {
-				first = false;
-			} else {
-				sb.append(" > ");
-			}
-			Set<Point> value = entry.getValue();
-			Point point = null;
-			for (Point p : value) {
-				point = p;
-			}
-			// sb.append("t^" + point.x + "*" + "(1-t)^" + point.y);
-			sb.append(point);
+		sb.append("<g class='rotatable' transform='rotate(0)' stroke-width='0.05'>\n");
+		sb.append("\t<line x1='0' y1='0' x2='" + nbT + "' y2='0' stroke='gray' />\n");
+		sb.append("\t<line x1='0' y1='0' x2='0' y2='" + nbOneMinusT  + "' stroke='gray' />\n");
+		for (int i = 1; i < nbT; i ++) {
+			sb.append("\t<line x1='" + i + "' y1='-0.2' x2='" + i + "' y2='+0.2' stroke='gray' />\n");	
 		}
+		for (int i = 1; i < nbOneMinusT; i ++) {
+			sb.append("\t<line x1='-0.2' y1='" + i + "' x2='+0.2' y2='" + i + "' stroke='gray' />\n");	
+		}
+		sb.append("\t<animateTransform attributeName='transform' attributeType='XML'\n");
+		sb.append("\t\ttype='translate' from='" + (A341534.DX * column) + " " + (A341534.DY * row) + "' to='" + (A341534.DX * column) + " " + (A341534.DY * row) + "' begin='0s' dur='10s' repeatCount='indefinite' additive='sum' />\n");
+		sb.append("\t<animateTransform attributeName='transform' attributeType='XML'\n");
+		double alphaMin = - 180.0 * Math.atan((double) min.y / (double) min.x) / Math.PI;
+		double alphaMax = - 180.0 * Math.atan((double) max.y / (double) max.x) / Math.PI;
+		sb.append("\t\ttype='rotate' from='" + alphaMin + " 0 0' to='" + alphaMax + " 0 0' begin='0s' dur='3s' keyTimes='0;" + 0.5 + ";1' values='" + alphaMin + ";" + alphaMax + ";" + alphaMin + "' repeatCount='indefinite' additive='sum' />\n");
+		sb.append("\t<animateTransform attributeName='transform' attributeType='XML'\n");
+		sb.append("\t\ttype='scale' from='10' to='10' begin='0s' dur='10s' repeatCount='indefinite' additive='sum' />\n");
+		for (Map.Entry<Point, Integer> entry : mapPointMultiplicity.entrySet()) {
+			Point point = entry.getKey();
+			int mu = entry.getValue();
+			sb.append("\t<circle cx='" + point.x + "' cy='" + point.y + "' r='0.3' stroke='white' fill='white' />\n");
+			sb.append("\t<text x='" + (point.x - 0.1) + "' y='" + (point.y + 0.15) + "' stroke='black' stroke-width='0.02' font-size='0.5'>" + mu + "</text>\n");
+		}
+		sb.append("</g>\n");
 		return sb.toString();
 	}
+
 }
