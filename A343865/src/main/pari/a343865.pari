@@ -1,0 +1,5 @@
+atan2(x, y)=if(x==0&&y==0, 0, if(x>0&&y==0, 0, if(x==0&&y>0, 0.5*Pi, if(x<0&&y==0, Pi, if(x==0&&y<0, 1.5*Pi, if(y>0, acos(x/sqrt(x^2+y^2)), 2*Pi-acos(x/sqrt(x^2+y^2))))))))
+f(n, n0, t0)=n+t0-n0-(t0>n0)*2*Pi
+b(x, y, n, n0)=my(r=sqrt(x^2+y^2), t0=atan2(x, y)); r<=f(n, n0, t0)
+a(n)=my(n0=n%(2*Pi), c=0); for(x=-n, n, for(y=-n, n, if(b(x, y, n, n0), c++))); c
+for(n=0, 50, print1(a(n), ", "))
