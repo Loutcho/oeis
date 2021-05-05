@@ -1,0 +1,2 @@
+list_a(nmax)=my(n=0,v=[Ser(x,x,nmax),Ser(x,x,nmax)],f=v->[v[1]+v[2],v[1]*v[2]]);print1("0, ");while(n<nmax,n++;v=f(v);print1(polcoeff(v[1],n),", "))
+list_a(30)
