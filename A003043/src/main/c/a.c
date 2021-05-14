@@ -5,100 +5,121 @@
 
 typedef long long int integer;
 
-void bin(int n, char *b) {
-	int o = 0;
-	while (n > 0) {
-		b[o ++] = '0' + (n & 1);
-		n >>= 1;
-	}
-	b[o] = '\0';
-}
+// #define DEBUG
+
+#ifdef DEBUG
+#define TS(x) { x; fflush(stdout); }
+#else
+#define TS(x)
+#endif
+
+#ifdef DEBUG
+#define ST(x)
+#else
+#define ST(x) { x; fflush(stdout); }
+#endif
 
 integer neighbor(int v, int axis) {
 	return v ^ (1 << axis);
 }
 
-void explore(int dim, int max_axis, int *mark, integer v, int path_len, integer *count)
-{
-	int axis;
-	int virtual_new_max_axis;
-	integer w;
-	char b[10 + 1];
-	/*
-	printf("\n");
-	for (int i = 0; i < path_len; i ++)
-	{
-		printf("\t");
-	}
-	*/
-	path_len ++;
-	mark[v] = 1;
-	/*
-	bin(v, b);
-	fprintf(stdout, "(v=%s, path_len=%d, ", b, path_len);
-	fflush(stdout);
-	*/
-
-	if (path_len == (1 << dim))
-	{
-		/*
-		fprintf(stdout, " ##");
-		fflush(stdout);
-		*/
-		(*count) = (*count) + 1;
-		if (((*count) % 1000) == 0)
-		{
-			fprintf(stdout, "%d\n", *count);
-			fflush(stdout);
+int prune(int dim, int *mark, int w) {
+	for (int axis = 0; axis < dim; axis ++) {
+		int ww = neighbor(w, axis);
+		if (mark[ww] == 1) {
+			continue;
+		}
+		int nb_nonmarked_neighbors = 0;
+		for (int axis2 = 0; axis2 < dim; axis2 ++) {
+			int www = neighbor(ww, axis2);
+			if (mark[www] == 0) {
+				nb_nonmarked_neighbors ++;
+			}
+		}
+		if (nb_nonmarked_neighbors <= 1) {
+			return 1; // prune
 		}
 	}
-	else
-	{
-		virtual_new_max_axis = max_axis + (max_axis != dim - 1);
-		/*
-		fprintf(stdout, "virtual_new_max_axis=%d", virtual_new_max_axis);
-		fflush(stdout);
-		*/
-		for (axis = 0; axis <= virtual_new_max_axis; axis ++)
-		{
-			/*
-			fprintf(stdout, "(axis=%d)", axis);
-			fflush(stdout);
-			*/
-			w = neighbor(v, axis);
-			if (mark[w] == 0)
-			{
-				int new_max_axis = (axis < virtual_new_max_axis) ? max_axis : virtual_new_max_axis;
-				explore(dim, new_max_axis, mark, w, path_len, count);
+	return 0; // do not prune
+}
+
+void explore(int dim, int max_axis, int *mark, integer v, int path_len, char *path, integer *count) {
+	path_len ++;
+	TS(
+		char path_addition[20 + 1];
+		sprintf(path_addition, "%d ", v);
+		strcat(path, path_addition);
+		printf("\n+++[%s]", path);
+	)
+	mark[v] = 1;
+
+	if (path_len == (1 << dim)) {
+		(*count) = (*count) + 1;
+		TS(
+			printf(" %c[36m%d%c[0m", 27, *count, 27);
+		)
+		ST(
+			if (((*count) % 100000) == 0) {
+				fprintf(stdout, "%lld\n", *count);
+				fflush(stdout);
+			}
+		)
+	} else {
+		int virtual_new_max_axis = max_axis + (max_axis != dim - 1);
+		TS(
+			printf(" (%d)", virtual_new_max_axis + 1);
+		)
+		for (int axis = 0; axis <= virtual_new_max_axis; axis ++) {
+			integer w = neighbor(v, axis);
+			if (mark[w] == 0) {
+				int p = prune(dim, mark, w);
+				if ((!p) || (p && path_len == (1 << dim) - 2)) {
+					TS(
+						printf(" %c[32m>%c[0m", 27, 27);
+					)
+					int new_max_axis = (axis < virtual_new_max_axis) ? max_axis : virtual_new_max_axis;
+					explore(dim, new_max_axis, mark, w, path_len, path, count);
+				}
+				else {
+					TS(
+						printf(" %c[31mX%c[0m", 27, 27);
+					)
+				}
+			} else {
+				TS(
+					printf(" %c[33m.%c[0m", 27, 27);
+				)
 			}
 		}
 	}
 	mark[v] = 0;
-	/*
-	printf(")");
-	fflush(stdout);
-	*/
+	if (strlen(path) > 0) {
+		do {
+			path[strlen(path) - 1] = '\0';
+		} while ((strlen(path) > 0) && path[strlen(path) - 1] != ' ');
+	}
+	TS(
+		printf("\n---[%s]", path);
+	)
 }
 
-integer a(int dim)
-{
+integer a(int dim) {
 	integer count = 0;
-	int v = 0;
+	char path[500 + 1];
 	int sz = (1 << dim) * sizeof(int);
 	int *mark = (int *) malloc(sz);
 	memset(mark, 0x0, sz);
-	explore(dim, -1, mark, v, 0, &count);
+	memset(path, 0x0, 100 + 1);
+	explore(dim, -1, mark, 0, 0, path, &count);
 	free(mark);
 	return count;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	int n = atoi(argv[1]);
-
-	integer an = a(n);
-	fprintf(stdout, "a(%d) = %ld\n", n, an);
+	fprintf(stdout, "a(%d) = %lld\n", n, a(n));
 	fflush(stdout);
+	/* A003043(n) = n! * a(n) */
 }
 
 
