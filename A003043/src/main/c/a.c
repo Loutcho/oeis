@@ -4,19 +4,20 @@
 #include <string.h>
 
 typedef long long int integer;
-
-// #define DEBUG
+/*
+ * => limitation to n <= 5
+ */
 
 #ifdef DEBUG
-#define TS(x) { x; fflush(stdout); }
+#define DEBUG_ONLY(x) { x; fflush(stdout); }
 #else
-#define TS(x)
+#define DEBUG_ONLY(x)
 #endif
 
 #ifdef DEBUG
-#define ST(x)
+#define NONDEBUG_ONLY(x)
 #else
-#define ST(x) { x; fflush(stdout); }
+#define NONDEBUG_ONLY(x) { x; fflush(stdout); }
 #endif
 
 integer neighbor(int v, int axis) {
@@ -45,7 +46,7 @@ int prune(int dim, int *mark, int w) {
 
 void explore(int dim, int max_axis, int *mark, integer v, int path_len, char *path, integer *count) {
 	path_len ++;
-	TS(
+	DEBUG_ONLY(
 		char path_addition[20 + 1];
 		sprintf(path_addition, "%d ", v);
 		strcat(path, path_addition);
@@ -55,10 +56,10 @@ void explore(int dim, int max_axis, int *mark, integer v, int path_len, char *pa
 
 	if (path_len == (1 << dim)) {
 		(*count) = (*count) + 1;
-		TS(
+		DEBUG_ONLY(
 			printf(" %c[36m%d%c[0m", 27, *count, 27);
 		)
-		ST(
+		NONDEBUG_ONLY(
 			if (((*count) % 100000) == 0) {
 				fprintf(stdout, "%lld\n", *count);
 				fflush(stdout);
@@ -66,7 +67,7 @@ void explore(int dim, int max_axis, int *mark, integer v, int path_len, char *pa
 		)
 	} else {
 		int virtual_new_max_axis = max_axis + (max_axis != dim - 1);
-		TS(
+		DEBUG_ONLY(
 			printf(" (%d)", virtual_new_max_axis + 1);
 		)
 		for (int axis = 0; axis <= virtual_new_max_axis; axis ++) {
@@ -74,19 +75,19 @@ void explore(int dim, int max_axis, int *mark, integer v, int path_len, char *pa
 			if (mark[w] == 0) {
 				int p = prune(dim, mark, w);
 				if ((!p) || (p && path_len == (1 << dim) - 2)) {
-					TS(
+					DEBUG_ONLY(
 						printf(" %c[32m>%c[0m", 27, 27);
 					)
 					int new_max_axis = (axis < virtual_new_max_axis) ? max_axis : virtual_new_max_axis;
 					explore(dim, new_max_axis, mark, w, path_len, path, count);
 				}
 				else {
-					TS(
+					DEBUG_ONLY(
 						printf(" %c[31mX%c[0m", 27, 27);
 					)
 				}
 			} else {
-				TS(
+				DEBUG_ONLY(
 					printf(" %c[33m.%c[0m", 27, 27);
 				)
 			}
@@ -98,7 +99,7 @@ void explore(int dim, int max_axis, int *mark, integer v, int path_len, char *pa
 			path[strlen(path) - 1] = '\0';
 		} while ((strlen(path) > 0) && path[strlen(path) - 1] != ' ');
 	}
-	TS(
+	DEBUG_ONLY(
 		printf("\n---[%s]", path);
 	)
 }
