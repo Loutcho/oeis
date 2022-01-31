@@ -1,0 +1,1 @@
+@"C:\Program Files (x86)\Graphviz2.38\bin\neato.exe" %1 -T svg -o %1.svg -Goverlap=scale

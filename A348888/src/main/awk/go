@@ -1,0 +1,1 @@
+awk -f gene_html.awk -v N_MIN=1 -v N_MAX=10 > a348888.html
