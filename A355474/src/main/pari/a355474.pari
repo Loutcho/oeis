@@ -1,0 +1,16 @@
+\\ --------------------------------------------------------------------------------------------------
+\\ Program 1 - simpler, but less in the spirit of the factorization patterns. Chosen for OEIS.
+
+T(m, n)=my(c=0); for(i=1, m, for(j=1, min(n, i), if(gcd(i, j)==1, c++))); c
+for(d=2, 10, for(n=1, d-1, my(m=d-n); print1(T(m, n), ", ")))
+
+\\ --------------------------------------------------------------------------------------------------
+\\ Program 2 (equivalent) - more in the spirit of the factorization patterns
+
+transform(v)=[v[1]+v[2], v[2]]                                                                                             \\ general case (dimension k): w[j] = v[j] + v[j+1] + ... + v[k]
+reduce(w)=my(i=w[1], j=w[2], d=gcd(i, j)); if(i==0||j==0, [i!=0, j!=0], d*=sign(i); [i/d, j/d])
+eligible(w)=my(i=w[1], j=w[2]); (i>0&&j<0)||(i<0&&j>0)                                                                     \\ general case (dimension k): one at least of the i1, i2, ..., ik is < 0, and one at least of them is > 0.
+T(m, n)=my(s=Set()); forvec(v=[[-m, m], [-n, n]], my(r=reduce(transform(v))); if(eligible(r), s=setunion(s, [r]))); #s+1
+for(d=2, 10, for(n=1, d-1, my(m=d-n); print1(T(m, n), ", ")))
+
+\\ --------------------------------------------------------------------------------------------------
