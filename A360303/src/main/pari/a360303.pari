@@ -1,0 +1,11 @@
+a(n)=sum(k=1,floor(sqrt(n)),2^floor(n/k-k))
+
+fprint1(f,v)=for(i=1,#v,filewrite1(f,v[i]))
+black_square(f,x,y)=fprint1(f, ["<rect y='", y, "' x='", -x-0.5, "' width='1' height='1' style='fill:black' />\n"]);
+white_square(f,x,y)=fprint1(f, ["<rect y='", y, "' x='", +x+0.5, "' width='1' height='1' style='fill:white' />\n"]);
+two_squares(f, x,y)=black_square(f, x,y);white_square(f, x,y);
+svg_n_k(f, n,k)=two_squares(f, floor(n/k-k),n);
+svg_n(f, n)=for(k=1,floor(sqrt(n)),svg_n_k(f, n,k));
+header(f, nmax)=fprint1(f, ["<?xml version='1.0' standalone='no'?>\n", "<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>\n", "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' style='background-color:grey' viewBox='", -(0.0 + nmax / 2), " 0.0 ", nmax, " ", nmax + 1, "' >\n", "<rect y='0' x='", -2 * nmax, "' width='", 2*nmax + 0.5, "' height='", nmax + 1, "' style='fill:white' />\n" "<rect y='0' x='0.5' width='", 2*nmax -0.5, "' height='", nmax + 1, "' style='fill:black' />\n"]);
+trailer(f)=fprint1(f,["</svg>\n"]);
+svg(nmax)=my(f=fileopen("C:\\Users\\Luc\\Desktop\\pari.svg","w"));header(f,nmax);for(n=1,nmax,svg_n(f, n));trailer(f);fileclose(f);
