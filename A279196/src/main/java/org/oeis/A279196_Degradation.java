@@ -5,13 +5,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-public class A279196 {
+/*
+ * Java program
+ * 
+ * Approach: brute force; degrade 1, n-1 times.
+ * 
+ * The program generates the sequence. Memory consuming: use a big -Xmx JVM parameter, e.g. -Xmx12g
+ */
+
+public class A279196_Degradation {
 	
 	// 1, 1, 2, 5, 13, 36, 102, 295, 864, 2557, 7624, 22868, 68920, 208527, 632987, 1926752, 5878738, ...
 
 	private static final int N_MAX = 17;
 	
-	public static void main(String[] args) { new A279196().main(); }
+	public static void main(String[] args) { new A279196_Degradation().main(); }
 	public void main() {
 		Map<Config, Long> population = theConfigWithOnePointAt00();
 		int n = 1;
