@@ -17,7 +17,7 @@ public class A279196_Degradation {
 	
 	// 1, 1, 2, 5, 13, 36, 102, 295, 864, 2557, 7624, 22868, 68920, 208527, 632987, 1926752, 5878738, ...
 
-	private static final int N_MAX = 17;
+	private static final int N_MAX = 5;
 	
 	public static void main(String[] args) { new A279196_Degradation().main(); }
 	public void main() {
@@ -132,6 +132,7 @@ public class A279196_Degradation {
 		public String toString() {
 			return map.toString();
 		}
+
 		public String toPolynomialForm() {
 			StringBuilder sb = new StringBuilder();
 			int termNumber = 0;
@@ -169,16 +170,42 @@ public class A279196_Degradation {
  			}
 			return sb.toString();
 		}
+		
+		public String toTikzCode() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("\\begin{tikzpicture}[scale=0.6]\n");
+			for (int i = 0; i <= 4; i ++) {
+				sb.append("\\draw[black, line width=" + (i == 0 ? 3 : 1) + "] (" + i + ",0) -- (" + i + ",4.5);\n");
+				sb.append("\\draw (" + i + ",0) node[below]{$" + i + "$};\n");
+			}
+			for (int j = 0; j <= 4; j ++) {
+				sb.append("\\draw[black, line width=" + (j == 0 ? 3 : 1) + "] (0," + j + ") -- (4.5, " + j + ");\n");
+				sb.append("\\draw (0," + j + ") node[left]{$" + j + "$};\n");
+			}
+
+			for (Map.Entry<Point, Integer> entry : map.entrySet()) {
+				Point p = entry.getKey();
+				Integer c = entry.getValue();
+				sb.append("\\draw[color=gray, fill=lightgray, line width=2pt] (" + p.x + "," + p.y + ") circle (10pt);\n");
+				sb.append("\\draw (" + p.x + "," + p.y + ") node{" + c + "} ;\n");
+			}
+			
+			sb.append("\\end{tikzpicture}\n");
+
+			return sb.toString();
+		}
 	}
 	
 	private void displayPopulation(int n, Map<Config, Long> population) {
-		commaSeparated(population);
+		// commaSeparated(population);
 		// or:
 		// bFile(n, population);
 		// or:
 		// verbose(n, population);
 		// or:
 		// verbosePolynomialForm(n, population);
+		// or:
+		verboseTikzCode(n, population);
 		// or:
 		// checkSumsAreFactorials(population);
 	}
@@ -206,6 +233,15 @@ public class A279196_Degradation {
 			Config config = entry.getKey();
 			// Long multiplicity = entry.getValue();
 			System.out.println(config.toPolynomialForm());
+		}
+	}
+	
+	private void verboseTikzCode(int n, Map<Config, Long> population) {
+		System.out.println("Population at stage " + n + ":");
+		for (Map.Entry<Config, Long> entry : population.entrySet()) {
+			Config config = entry.getKey();
+			// Long multiplicity = entry.getValue();
+			System.out.print(config.toTikzCode());
 		}
 	}
 	
