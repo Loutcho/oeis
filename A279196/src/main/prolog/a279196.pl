@@ -1,7 +1,31 @@
-a(N) :-
+:- dynamic(dynamic_count/2).
+
+%===============================================================================
+% count_successes(+Goal, +Key, -Successes)
+% Tries to prove Goal as many times as possible
+% and counts its number of success Successes.
+% Side effect: uses assert/retract on dynamic predicate dynamic_count/2
+% in which +Key is used as the first argument to remember what is counted,
+% whereas the second argument is the count, proper.
+% This makes it possible to use count_successes/3 for more than one count.
+
+count_successes(Goal, Key, Successes) :-
+	retractall(dynamic_count(Key, _)),
+	assert(dynamic_count(Key, 0)),
+	forall(Goal,
+		(
+		dynamic_count(Key, N),
+		retract(dynamic_count(Key, N)),
+		NN is N + 1,
+		assert(dynamic_count(Key, NN))
+		)
+	),
+	dynamic_count(Key, Successes).
+
+a(N, AN) :-
 	M is N - 1,
-	valid_chain_of_successors([1], M, Chain),
-	writeln(Chain).
+	count_successes(valid_chain_of_successors([1], M, _), a, AN).
+
 %===============================================================================
 % valid_chain_of_successors(+Q, +RemainingAmount, -Chain)
 % Chain is a valid list [Q1, Q2, ... Qn]
