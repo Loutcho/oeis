@@ -1,64 +1,37 @@
 %===============================================================================
-:- dynamic(dynamic_count/2).
 :- dynamic(memoized_v/3).
-:- dynamic(sum/3).
 clean :-
-	retractall(dynamic_count(_, _)),
-	retractall(memoized_v(_, _, _)),
-	retractall(sum(_, _, _)).
-count_successes(Goal, Key, Successes) :-
-	retractall(dynamic_count(Key, _)),
-	assert(dynamic_count(Key, 0)),
-	forall(Goal, (
-		dynamic_count(Key, N),
-		retract(dynamic_count(Key, N)),
-		NN is N + 1,
-		assert(dynamic_count(Key, NN))
-	)),
-	dynamic_count(Key, Successes).
+	retractall(memoized_v(_, _, _)).
 %===============================================================================
 a(N, AN) :-
 	M is N - 1,
-	v([1], M, AN).
+	v([1] / M, AN).
 %===============================================================================
-v(_Q, M, VQM) :-
+v(_Q / M, VQM) :-
 	M = 0, !, VQM = 1.
-v(Q, M, VQM) :-
+v(Q / M, VQM) :-
 	memoized_v(Q, M, VQM), !.
-v(Q, M, VQM) :-
+v(Q / M, VQM) :-
 	Q = [0 | QT], !,
-	v(QT, M, VQM).
-v(Q, M, VQM) :-
-	not(M = 0),
-	not(memoized_v(Q, M, VQM)),
-	Q = [QH | _QT],
-	not(QH = 0),
-	retractall(sum(Q, M, _)),
-	assert(sum(Q, M, 0)),
-	forall(
+	v(QT / M, VQM).
+v(Q / M, VQM) :-
+	findall(
+		QQ / MM,
 		(
 			not(Q = []),
-			valid_successor(Q, M, QQ),
+			valid_successor(Q / M, QQ / MM),
 			not(QQ = [])
 		),
-		(
-			amount_consumption(QQ, C),
-			MM is M - C,
-			v(QQ, MM, VQQMM),
-			sum(Q, M, Sum),
-			NewSum is Sum + VQQMM,
-			retract(sum(Q, M, Sum)),
-			assert(sum(Q, M, NewSum))
-		)
+		QQMMs
 	),
-	sum(Q, M, VQM),
+	% length(QQMMs, Len), maplist(write, ['DEBUG: Len = ', Len, '\n']),
+	maplist(v, QQMMs, VQQMMs),
+	foldl(plus, VQQMMs, 0, VQM),
 	assert(memoized_v(Q, M, VQM)).
-
 %===============================================================================
-valid_successor(Q, RemainingAmount, QQ) :-
-	resize(Q, RemainingAmount, Q0),
-	InitialUpperRightSummand = 0,
-	instanciate(Q0, InitialUpperRightSummand, RemainingAmount, QQ0),
+valid_successor(Q / R, QQ / RR) :-
+	resize(Q, R, Q0),
+	instanciate(Q0 / R, 0, QQ0 / RR),
 	trim_right(QQ0, QQ),
 	not(QQ = []).
 %===============================================================================
@@ -74,23 +47,18 @@ trim_left([], []).
 trim_left(X, Y) :- X = [0 | XX], trim_left(XX, Y).
 trim_left(X, Y) :- X = [H | _], not(H = 0), Y = X.
 %===============================================================================
-%   Q  *   UpperRightSummand
+%   Q  *   U
 %     / \ /
 %    *   *
 %     \ /
 %      *
 %     /  QQ
 %    *
-% instanciate(+Q, +UpperRightSummand, +RemainingAmount, -QQ).
-instanciate([], _UpperRightSummand, _RemainingAmount, []).
-instanciate([Q | Qs], UpperRightSummand, RemainingAmount, [QQ | QQs]) :-
-	Max is min(RemainingAmount, Q + UpperRightSummand),
+instanciate([] / R, _U, [] / R).
+instanciate([Q | Qs] / R, U, [QQ | QQs] / RRR) :-
+	Max is min(R, Q + U),
 	between(0, Max, QQ),
-	NewUpperRightSummand = QQ,
-	NewRemainingAmount is RemainingAmount - QQ,
-	instanciate(Qs, NewUpperRightSummand, NewRemainingAmount, QQs).
-%===============================================================================
-amount_consumption([], 0).
-amount_consumption([Q | Qs], C) :- amount_consumption(Qs, CC), C is CC + Q.
+	RR is R - QQ,
+	instanciate(Qs/RR, QQ, QQs/RRR).
 %===============================================================================
 % ?- dict_create(D, toto, []), put_dict(key, D, value, DD).
