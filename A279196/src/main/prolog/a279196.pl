@@ -1,7 +1,34 @@
 %===============================================================================
-:- dynamic(memoized_v/3).
+:- dynamic(f/2).
 clean :-
-	retractall(memoized_v(_, _, _)).
+	retractall(f(_, _)).
+%===============================================================================
+main(NMax) :-
+	clean,
+	forall(
+		between(1, NMax, N),
+		(
+			a(N, AN),
+			maplist(write, [N, ': ', AN, '\n']),
+			flush_output
+		)
+	),
+	nl.
+main_time(NMax) :-
+	clean,
+	forall(
+		between(1, NMax, N),
+		(
+			time(a(N, AN)),
+			maplist(write, [N, ': ', AN, '\n']),
+			flush_output
+		)
+	),
+	nl.
+main_profile(N) :-
+	clean,
+	profile(a(N, AN)),
+	writeln(AN).
 %===============================================================================
 a(N, AN) :-
 	M is N - 1,
@@ -10,7 +37,7 @@ a(N, AN) :-
 v(_Q / M, VQM) :-
 	M = 0, !, VQM = 1.
 v(Q / M, VQM) :-
-	memoized_v(Q, M, VQM), !.
+	f(Q / M, VQM), !.
 v(Q / M, VQM) :-
 	Q = [0 | QT], !,
 	v(QT / M, VQM).
@@ -27,7 +54,7 @@ v(Q / M, VQM) :-
 	% length(QQMMs, Len), maplist(write, ['DEBUG: Len = ', Len, '\n']),
 	maplist(v, QQMMs, VQQMMs),
 	foldl(plus, VQQMMs, 0, VQM),
-	assert(memoized_v(Q, M, VQM)).
+	assert(f(Q / M, VQM)).
 %===============================================================================
 valid_successor(Q / R, QQ / RR) :-
 	resize(Q, R, Q0),
@@ -61,4 +88,3 @@ instanciate([Q | Qs] / R, U, [QQ | QQs] / RRR) :-
 	RR is R - QQ,
 	instanciate(Qs/RR, QQ, QQs/RRR).
 %===============================================================================
-% ?- dict_create(D, toto, []), put_dict(key, D, value, DD).
