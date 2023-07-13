@@ -44,11 +44,7 @@ v(Q / M, VQM) :-
 v(Q / M, VQM) :-
 	findall(
 		QQ / MM,
-		(
-			not(Q = []),
-			valid_successor(Q / M, QQ / MM),
-			not(QQ = [])
-		),
+		valid_successor(Q / M, QQ / MM),
 		QQMMs
 	),
 	% length(QQMMs, Len), maplist(write, ['DEBUG: Len = ', Len, '\n']),
@@ -59,7 +55,7 @@ v(Q / M, VQM) :-
 valid_successor(Q / R, QQ / RR) :-
 	resize(Q, R, Q0),
 	instanciate(Q0 / R, 0, QQ0 / RR),
-	trim_right(QQ0, QQ),
+	trim(QQ0, QQ),
 	not(QQ = []).
 %===============================================================================
 repl(X, N, L) :-
@@ -69,10 +65,10 @@ resize(Q, N, QQ) :-
 	M is max(0, N - 1),
 	repl(0, M, L),
 	append(Q, L, QQ).
-trim_right(Q, QQ) :- reverse(Q, Q0), trim_left(Q0, QQ0), reverse(QQ0, QQ).
 trim_left([], []).
 trim_left(X, Y) :- X = [0 | XX], trim_left(XX, Y).
 trim_left(X, Y) :- X = [H | _], not(H = 0), Y = X.
+trim(Q0, Q4) :- trim_left(Q0, Q1), reverse(Q1, Q2), trim_left(Q2, Q3), reverse(Q3, Q4).
 %===============================================================================
 %   Q  *   U
 %     / \ /
