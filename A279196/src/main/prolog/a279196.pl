@@ -19,9 +19,17 @@ main_time(NMax) :-
 	forall(
 		between(1, NMax, N),
 		(
+			writeln('-------------------------------------------'),
+			maplist(write, ['Computing a(', N, ')...\n']),
+			get_time(X),
+			stamp_date_time(X, Y, local),
+			writeln(Y),
 			time(a(N, AN)),
-			maplist(write, [N, ': ', AN, '\n']),
-			flush_output
+			maplist(write, ['a(', N, ') = ', AN, '\n']),
+			flush_output,
+			get_time(X1),
+			stamp_date_time(X1, Y1, local),
+			writeln(Y1)
 		)
 	),
 	nl.
@@ -48,6 +56,10 @@ v(Q / M, VQM) :-
 		QQMMs
 	),
 	% length(QQMMs, Len), maplist(write, ['DEBUG: Len = ', Len, '\n']),
+	%TODO:
+	%msort(QQMMs, QQMMs2),
+	%clumped(QQMMs2, QQMMCCs),
+	%TODO: maplist sur résultat de clumped, somme pondérée
 	maplist(v, QQMMs, VQQMMs),
 	foldl(plus, VQQMMs, 0, VQM),
 	assert(f(Q / M, VQM)).
