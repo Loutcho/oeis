@@ -19,17 +19,15 @@ main_time(NMax) :-
 	forall(
 		between(1, NMax, N),
 		(
-			writeln('-------------------------------------------'),
-			maplist(write, ['Computing a(', N, ')...\n']),
-			get_time(X),
-			stamp_date_time(X, Y, local),
-			writeln(Y),
-			time(a(N, AN)),
-			maplist(write, ['a(', N, ') = ', AN, '\n']),
-			flush_output,
-			get_time(X1),
-			stamp_date_time(X1, Y1, local),
-			writeln(Y1)
+			get_time(TStart),
+			%format_time(atom(Start), '%Y/%m/%d %H:%M:%S ', TStart),
+			%maplist(write, [Start, 'Computing a(', N, ')...\n']),
+			a(N, AN),
+			get_time(TEnd),
+			format_time(atom(End), '%Y/%m/%d %H:%M:%S ', TEnd),
+			Duration is truncate(TEnd - TStart),
+			maplist(write, [End, 'a(', N, ') = ', AN, ' (', Duration, 's)\n']),
+			flush_output
 		)
 	),
 	nl.
