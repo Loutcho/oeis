@@ -24,7 +24,7 @@ function clone(c, cc) {
 	for (position in c) { cc[position] = c[position]; }
 }
 
-function successors(P, S, c, position, cc, ccc, coordinates, i, j, ii, jj, PP) {
+function successors(P, S, c, position, cc, coordinates, i, j, ii, jj, PP) {
 	split("", c, ":");
 	polynomial_to_array_of_coefficients(P, c);
 	for (position in c) {
@@ -44,8 +44,42 @@ function successors(P, S, c, position, cc, ccc, coordinates, i, j, ii, jj, PP) {
 	}
 }
 
+function predecessors(P, S, position, cc, coordinates, i, j, ii, jj, PP) {
+	split("", c, ":");
+	polynomial_to_array_of_coefficients(P, c);
+	for (position in c) {
+		split("", cc, ":");
+		clone(c, cc);
+		split(position, coordinates, "-");
+		ii = coordinates[1];
+		j = coordinates[2];
+		i = ii - 1;
+		jj = j + 1;
+			print "/* --- " i " --- " j " --- " cc[ii "-" j] " --- " cc[i "-" jj] " --- */";
+		if (i >= 0 && j >= 0 && cc[ii "-" j] > 0 && cc[i "-" jj] > 0) {
+			cc[ii "-" j] --;
+			if (cc[ii "-" j] == 0) { delete cc[ii "-" j]; }
+			cc[i "-" jj] --;
+			if (cc[i "-" jj] == 0) { delete cc[i "-" jj]; }
+			cc[i "-" j] ++;
+			PP = array_of_coefficients_to_polynomial(cc);
+			S[PP] = 1;
+		}
+	}
+}
+
 function new_successors(P, S, SS, PP) {
 	successors(P, SS);
+	clone(SS, S);
+	for (PP in SS) {
+		if (is_in_gray(PP) || is_in_black(PP)) {
+			delete S[PP];
+		}
+	}
+}
+
+function new_predecessors(P, S, SS, PP) {
+	predecessors(P, SS);
 	clone(SS, S);
 	for (PP in SS) {
 		if (is_in_gray(PP) || is_in_black(PP)) {
@@ -158,6 +192,7 @@ function print_graphviz_header() {
 	#print "\trankdir = \"LR\";";
 	#print "\tnode[shape = \"box\" style = \"filled\" fillcolor = \"beige\"];";
 	print "\tnode[shape = \"point\"];";
+	print "\tedge[arrowhead = \"none\" penwidth = \"4\"];";
 }
 
 function print_graphviz_footer() {
@@ -180,13 +215,19 @@ BEGIN {
 		P = choose_gray();
 		#print "Chosen P: " P;
 
+		split("", s, ",");
+		new_predecessors(P, s);
 		split("", S, ",");
 		new_successors(P, S);
 		#print "Successors of P that are new: " keys_to_string(S);
 	
+		for (PP in s) {
+			m = min_key(gray2);
+			add_to_gray(PP, m - 1);
+			print "\t\"" PP "\" -> \"" P "\"[color = \"red\"];";
+		}
 		for (PP in S) {
 			m = max_key(gray2);
-			#print "Adding (" PP ", " (m + 1) ") to gray";
 			add_to_gray(PP, m + 1);
 			print "\t\"" P "\" -> \"" PP "\";";
 		}
