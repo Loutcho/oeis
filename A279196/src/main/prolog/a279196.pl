@@ -21,7 +21,14 @@ a(N, AN) :-
 	M is N - 1,
 	v([1] / M, AN).
 
+nbnz([], 0).
+nbnz([H | T], N) :-
+	(H = 0 -> I = 0 ; I = 1),
+	nbnz(T, NN),
+	N is NN + I.
+
 v(_ / 0, 1) :- !.
+v(Q / 1, VQM) :- !, nbnz(Q, VQM).
 v(Q / M, VQM) :- memv(Q / M, VQM), !.
 v(Q / M, VQM) :- Q = [0 | QT], !, v(QT / M, VQM).
 v(Q / M, VQM) :-
@@ -32,7 +39,10 @@ v(Q / M, VQM) :-
 	),
 	maplist(v, QQMMs, VQQMMs),
 	foldl(plus, VQQMMs, 0, VQM),
-	assert(memv(Q / M, VQM)).
+	assert(memv(Q / M, VQM)),
+	get_time(T),
+	format_time(atom(Timestamp), '%Y/%m/%d %H:%M:%S ', T),
+	maplist(write, [Timestamp, memv(Q / M, VQM), '.\n']).
 
 valid_successor(Q / R, QQ / RR) :-
 	resize(Q, R, Q0),
