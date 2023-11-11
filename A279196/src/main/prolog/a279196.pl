@@ -32,17 +32,15 @@ v(Q / 1, VQM) :- !, nbnz(Q, VQM).
 v(Q / M, VQM) :- memv(Q / M, VQM), !.
 v(Q / M, VQM) :- Q = [0 | QT], !, v(QT / M, VQM).
 v(Q / M, VQM) :-
-	findall(
-		QQ / MM,
-		valid_successor(Q / M, QQ / MM),
-		QQMMs
-	),
-	maplist(v, QQMMs, VQQMMs),
-	foldl(plus, VQQMMs, 0, VQM),
+	aggregate_all(sum(T), w(Q / M, T), VQM),
 	assert(memv(Q / M, VQM)),
 	get_time(T),
 	format_time(atom(Timestamp), '%Y/%m/%d %H:%M:%S ', T),
 	maplist(write, [Timestamp, memv(Q / M, VQM), '.\n']).
+
+w(Q / M, T) :-
+	valid_successor(Q / M, QQ / MM),
+	v(QQ / MM, T).
 
 valid_successor(Q / R, QQ / RR) :-
 	resize(Q, R, Q0),
