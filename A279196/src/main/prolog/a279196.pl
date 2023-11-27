@@ -63,8 +63,8 @@ trim_left(X, Y) :- X = [H | _], not(H = 0), Y = X.
 
 trim(Q0, Q4) :- trim_left(Q0, Q1), reverse(Q1, Q2), trim_left(Q2, Q3), reverse(Q3, Q4).
 
-instanciate([] / R, _U, [] / R).
-instanciate([Q | Qs] / R, U, [QQ | QQs] / RRR) :-
+instantiate([] / R, _U, [] / R).
+instantiate([Q | Qs] / R, U, [QQ | QQs] / RRR) :-
 	Max is min(R, Q + U),
 	between(0, Max, QQ),
 	RR is R - QQ,
