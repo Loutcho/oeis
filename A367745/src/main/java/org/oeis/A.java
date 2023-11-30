@@ -17,7 +17,7 @@ public class A {
 	private String filename;
 	private int n = 1;
 	private final int N_MAX = 8;
-	private final int WIDTH = 1360;
+	private final int WIDTH = 1380;
 	private final int HEIGHT = 900;
 	private BufferedWriter writer;
 	
@@ -43,11 +43,12 @@ public class A {
 			n ++;
 			l = child(l);
 		}
-		
-		line(0, 0, 1360, 0);
-		line(0, 0, 0, 900);
-		line(0, 900, 1360, 900);
-		line(1360, 0, 1360, 900);
+
+		for (n = 0; n <= N_MAX; n ++) {
+			double xx = fx(n);
+			text(xx, fy(0) - 10, 20, "red", "L(" + (n + 1) + ")");
+			line(xx, fy(0) - 10, xx, fy(1) + 10, "red");
+		}
 		
 		writer.write("</svg>");
 		
@@ -74,33 +75,27 @@ public class A {
 	}
 	
 	private void node(double cx, double cy, String text) throws IOException {
-		double k = Math.pow(n, 2.0);
-		text(cx, cy, 450.0 / k, "black", text);
+		double k = Math.pow(n, 1.62);
+		text(cx, cy, 200.0 / k, "black", text);
+		line(cx - 1, cy, WIDTH, cy, "black");
 	}
 	
-	private void point(double cx, double cy) throws IOException {
-		circle(cx, cy, 2.5, "black", 1.0, "red");
-	}
-	private void circle(double cx, double cy, double r, String stroke, double strokeWidth, String fill) throws IOException {
+	private void line(double x1, double y1, double x2, double y2, String stroke) throws IOException {
 		writer.write(
-				String.format("<circle cx='%.15f' cy='%.15f' r='%.15f' stroke='%s' stroke-width='%.15f' fill='%s' />", cx, cy, r, stroke, strokeWidth, fill)
-		);
-	}
-	private void line(double x1, double y1, double x2, double y2) throws IOException {
-		writer.write(
-				String.format("<line x1=\"%.15f\" y1=\"%.15f\" x2=\"%.15f\" y2=\"%.15f\" stroke='%s' stroke-width='%.15f' />", x1, y1, x2, y2, "rgb(127, 127, 255)", 3.0)
-		);
-	}
-	private void text(double x, double y, double fontSize, String fillColor, String text) throws IOException {
-		writer.write(
-				String.format("<text x=\"%.15f\" y=\"%.15f\" font-size=\"%s\" fill=\"%s\" text-anchor=\"middle\" alignment-baseline=\"middle\">%s</text>", x, y, fontSize, fillColor, text)
+				String.format("<line x1=\"%.15f\" y1=\"%.15f\" x2=\"%.15f\" y2=\"%.15f\" stroke='%s' stroke-width='%.15f' />", x1, y1, x2, y2, stroke, 1.0)
 		);
 	}
 
-	private static final double MARGE_X = 80.0;
-	private static final double MARGE_Y = 20.0;
-	private static final double COTE_X = 150.0;
-	private static final double COTE_Y = 860.0;
+	private void text(double x, double y, double fontSize, String fillColor, String text) throws IOException {
+		writer.write(
+				String.format("<text x=\"%.15f\" y=\"%.15f\" font-size=\"%s\" fill=\"%s\" text-anchor=\"end\" alignment-baseline=\"middle\">%s</text>", x, y, fontSize, fillColor, text)
+		);
+	}
+
+	private static final double MARGE_X = 100.0;
+	private static final double MARGE_Y = 100.0;
+	private static final double COTE_X = 157.0;
+	private static final double COTE_Y = 750.0;
 	
 	private static final double fx(double x) {
 		return MARGE_X + COTE_X * x;
