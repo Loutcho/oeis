@@ -1,0 +1,18 @@
+\\ Requiert PARI version récente pour les passages de paramètres par référence (~)
+
+f(n)=my(S=List([]));proc(2,[],n,~S);S
+proc(b,L,r,~S)=if(r==1,listput(S,L),fordiv(r,d,if(d>=b,my(LL=List(L));listput(LL,d);proc(d,LL,r/d,~S))))
+a(n)=#f(n)
+for(n=1,50,print1(a(n), ", "))
+
+\\ L'intention initiale était d'expérimenter ceci :
+
+\\ s(L)=sum(i=1,#L,L[i]-1)
+\\ t(S)=apply(s,S)
+\\ h(n)=t(f(n))
+\\ for(n=1,50,print1(n, " -> ", h(n), "\n"))
+
+\\ et de regarder si les listes h(n) étaient des ensembles ou des multiensembles.
+\\ Conjecture initiale : des ensembles ?
+\\ Résultat : conjecture fausse. Exemple, h(36) contient deux fois 10.
+
