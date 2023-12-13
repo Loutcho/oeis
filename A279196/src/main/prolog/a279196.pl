@@ -44,7 +44,7 @@ w(Q / M, T) :-
 
 valid_successor(Q / R, QQ / RR) :-
 	resize(Q, R, Q0),
-	instanciate(Q0 / R, 0, QQ0 / RR),
+	instantiate(Q0 / R, 0, QQ0 / RR),
 	trim(QQ0, QQ),
 	not(QQ = []).
 
@@ -68,4 +68,4 @@ instantiate([Q | Qs] / R, U, [QQ | QQs] / RRR) :-
 	Max is min(R, Q + U),
 	between(0, Max, QQ),
 	RR is R - QQ,
-	instanciate(Qs/RR, QQ, QQs/RRR).
+	instantiate(Qs/RR, QQ, QQs/RRR).
