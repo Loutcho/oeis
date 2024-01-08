@@ -8,8 +8,6 @@
 % Principles:
 % all possible Q's for a fixed N are built recursively.
 % Progression is by antidiagonals.
-% If an antidiagonal does not consume all the available amount of 
-% 
 %
 %       / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
 %      /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \
@@ -22,6 +20,8 @@
 %   \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   /
 %    \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /
 %
+%                           0 <= X <= min(N, Left + Right)
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The memw predicate will memoize the w predicate,
@@ -33,8 +33,27 @@
 clean :-
 	retractall(memw(_, _)).
 
+% save/0 is det
+% Saves the memoization to file. For interactive use.
+save :-
+	get_time(Now),
+	format_time(atom(Filename), 'memw5_%Y%m%d_%H%M%S', Now),
+	tell(Filename),
+	forall(
+		memw(Q/N, VN),
+		maplist(write, [memw(Q/N, VN), '.\n'])
+	),
+	told.
+
+% threaded_main/1 is det
+% Runs main/1 in a separated thread with increased memory.
+% Recommended entry point. E.g.: threaded_main(50).
+threaded_main(NMax) :-
+	thread_create(main(NMax), _Thread, [stack_limit(10 000 000 000)]).
+
 % main(+NMax) is det.
-% Main entry point. Lists all the a(N)'s from N = 1 to N = NMax.
+% Natural entry point but slightly awkward when run from the read-eval-print loop (interactive toplevel).
+% Lists all the a(N)'s from N = 1 to N = NMax, with timestamps and durations.
 main(NMax) :-
 	forall(
 		between(1, NMax, N),
