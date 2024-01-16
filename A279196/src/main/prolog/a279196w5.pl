@@ -6,21 +6,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Principles:
-% all possible Q's for a fixed N are built recursively.
-% Progression is by antidiagonals.
+% - all the numbers of possible Q's with a given mass are computed recursively.
+% - the top level progression is by antidiagonals.
+% - the progression in an antidiagonal is from left to right.
+% - the choices for X depend on Left, Right, on the remaining mass to distribute
+%   and on the "mode" dictated by the assignments that precede X in LL.
 %
 %       / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
 %      /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \
-%     |     |     |     |     |     |Left |Right|     |     |     |     | => Q
+%     |     |     |     |     |     |Left |Right|     |     |     |     | => L
 %     |     |     |     |     |     |     |     |     |     |     |     |
 %    / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \
 %   /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \
-%  |     |     |     |     |     |     |  X  |     |     |     |     |     | => QQ
+%  |     |     |     |     |     |     |  X  |     |     |     |     |     | => LL
 %  |     |     |     |     |     |     |     |     |     |     |     |     |
 %   \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   /
 %    \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /
 %
-%                           0 <= X <= min(N, Left + Right)
+%                           0 <= X <= min(M, Left + Right)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -40,16 +43,18 @@ save :-
 	format_time(atom(Filename), 'memw5_%Y%m%d_%H%M%S', Now),
 	tell(Filename),
 	forall(
-		memw(Q/N, VN),
-		maplist(write, [memw(Q/N, VN), '.\n'])
+		memw(L/M, W),
+		maplist(write, [memw(L/M, W), '.\n'])
 	),
 	told.
 
-% threaded_main/1 is det
+% threaded_main/2 is det
 % Runs main/1 in a separated thread with increased memory.
-% Recommended entry point. E.g.: threaded_main(50).
-threaded_main(NMax) :-
-	thread_create(main(NMax), _Thread, [stack_limit(10 000 000 000)]).
+% Recommended entry point. E.g.: threaded_main(50, T) or threaded_main(50, _).
+% The T that Prolog writes to the standard output is the one to use
+% interactively in thread_join/2 to release the thread once the calculations are over.
+threaded_main(NMax, Thread) :-
+	thread_create(main(NMax), Thread, [stack_limit(10 000 000 000)]).
 
 % main(+NMax) is det.
 % Natural entry point but slightly awkward when run from the read-eval-print loop (interactive toplevel).
@@ -73,105 +78,105 @@ main(NMax) :-
 a(N, AN) :- N = 1, !, AN = 1.
 a(N, AN) :- M is N - 2, w([1] / M, AN).
 
-% w(+Q / +M, -VQM) is det.
-% The number of ways of filling something under Q
-% - that respects the Pascal Triangle Inequalities constraints
-% - and with a total sum of coefficients equal to M
-% is equal to VQM.
+% w(+L / +M, -W) is det.
+% The number of ways to Pascal-distribute the mass M under the list L is equal to W.
+% Side effect: memoizes actual computations
 w(_ / 0, 1) :- !.
-w(Q / M, VQM) :- memw(Q / M, VQM), !.
-w(Q / M, VQM) :-
-	aggregate_all(sum(T), ww(Q / M, T), VQM),
-	assert(memw(Q / M, VQM)),
-	reverse(Q, QQ),
-	((QQ = Q) -> true ; assert(memw(QQ / M, VQM))).
+w(L / M, W) :- memw(L / M, W), !.
+w(L / M, W) :-
+	aggregate_all(sum(WW), ww(L / M, WW), W),
+	assert(memw(L / M, W)),
+	reverse(L, L1),
+	((L1 = L) -> true ; assert(memw(L1 / M, W))).
 
-% ww(+Q / +M, -T) is nondet.
-% a successor of Q / M has a w() equal to T
-ww(Q / M, T) :-
-	s_elision(0, Q, M, QQ, MM),
-	w(QQ / MM, T).
+% ww(+L / +M, -WW) is nondet.
+% a successor LL of L / M is such that w(LL, M - |LL|) is equal to WW.
+ww(L / M, WW) :-
+	s_elision(0, L, M, LL, MM),
+	w(LL / MM, WW).
 
-% stop(+M, -QQ, -MM) is det.
-% Manages the case when QQ stops immediately there: no further element.
-stop(M, QQ, MM) :-
-	QQ = [],
+% -----------------------------------------------------------------------------
+% Technical predicates for code factorization:
+
+% stop(+M, -LL, -MM) is det.
+% Manages the common case when LL stops immediately: no current element.
+stop(M, LL, MM) :-
+	LL = [],
 	MM = M.
 
-% last(+Left, +M, -QQ, -MM).
-% Manages the case when QQ stops immediately there
-% The computed element is the last one and as such cannot be 0.
-last(Left, M, QQ, MM) :-
+% last(+Left, +M, -LL, -MM).
+% Manages the common case when LL stops with the element being chosen which cannot be 0.
+last(Left, M, LL, MM) :-
 	Max is min(Left, M),
 	between(1, Max, X),
-	QQ = [X],
+	LL = [X],
 	MM is M - X.
 
 % ------------------------------------------------------------------------------
 % The s_* predicates:
-% - all have a (+Left, +Q, +M, -QQ, -MM) signature;
-% - recursively build a successor of (Left, Q, M) and put the result in (QQ, M)
+% - all have a (+Left, +L, +M, -LL, -MM) signature;
+% - recursively build a successor of (Left, L, M) and put the result in (LL, MM)
 % where:
 % - Left = the value in the previous row, on the "left of the cursor"
-% - Q = the values in the previous row, on the "right" of the cursor"
-% - M = the maximum sum of values that can be put in QQ
-% - QQ = the current row being built from the previous one
-% - MM = the remaining sum of values that one will have to put under QQ
+% - L = the values in the previous row, on the "right" of the cursor"
+% - M = the mass that can be Pascal distributed under Left and L
+% - LL = the current row being built from the previous one
+% - MM = the remaining sum of values that one will have to put under LL
 
 % ------------------------------------------------------------------------------
-% s_elision(+Left, +Q, +M, -QQ, -MM)
-% manages the case when a sequence of leading zeroes is ongoing in QQ
+% s_elision(+Left, +L, +M, -LL, -MM)
+% manages the case when a sequence of leading zeroes is ongoing in LL
 % with the consequences that they are elidable and that one cannot stop there.
 
-s_elision(Left, [], M, QQ, MM) :-
-	last(Left, M, QQ, MM).
+s_elision(Left, [], M, LL, MM) :-
+	last(Left, M, LL, MM).
 
-s_elision(Left, [Right | Rest], M, QQ, MM) :-
+s_elision(Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
 	(
 		(X = 0)
 	->
-		(QQ = Y, s_elision(Right, Rest, M1, Y, MM))
+		(LL = Y, s_elision(Right, Rest, M1, Y, MM))
 	;
-		(QQ = [X | Y], s_normal(Right, Rest, M1, Y, MM))
+		(LL = [X | Y], s_normal(Right, Rest, M1, Y, MM))
 	).
 
 % ------------------------------------------------------------------------------
-% s_normal(+Left, +Q, +M, -QQ, -MM)
-% manages the "normal" case when the previous number in QQ was not zero.
+% s_normal(+Left, +L, +M, -LL, -MM)
+% manages the "normal" case when the previous number in LL was not zero.
 
-s_normal(Left, [], M, QQ, MM) :-
-	stop(M, QQ, MM)
+s_normal(Left, [], M, LL, MM) :-
+	stop(M, LL, MM)
 	;
-	last(Left, M, QQ, MM).
+	last(Left, M, LL, MM).
 
-s_normal(_Left, [Right | Rest], M, QQ, MM) :-
-	stop(M, QQ, MM)
+s_normal(_Left, [Right | Rest], M, LL, MM) :-
+	stop(M, LL, MM)
 	;
 	(
 		X = 0,
-		QQ = [X | Y],
+		LL = [X | Y],
 		M1 is M - X,
 		s_unbreakable(Right, Rest, M1, Y, MM)
 	).
 
-s_normal(Left, [Right | Rest], M, QQ, MM) :-
+s_normal(Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(1, Max, X),
-	QQ = [X | Y],
+	LL = [X | Y],
 	M1 is M - X,
 	s_normal(Right, Rest, M1, Y, MM).
 
 % ------------------------------------------------------------------------------
-% s_unbreakable(+Left, +Q, +M, -QQ, -MM)
-% manages the case when a sequence of zeroes in ongoing in QQ
+% s_unbreakable(+Left, +L, +M, -LL, -MM)
+% manages the case when a sequence of zeroes in ongoing in LL
 % but it's not a sequence of leading zeroes. These zeroes are internal.
 % The consequence is: one cannot stop there.
 
-s_unbreakable(Left, [], M, QQ, MM) :-
-	last(Left, M, QQ, MM).
+s_unbreakable(Left, [], M, LL, MM) :-
+	last(Left, M, LL, MM).
 
 s_unbreakable(Left, [Right | Rest], M, [X | Y], MM) :-
 	Max is min(Left + Right, M),
