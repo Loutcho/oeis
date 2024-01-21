@@ -125,16 +125,19 @@ u0(    elision, Y,      Y ).
 u0(     normal, Y, [0 | Y]).
 u0(unbreakable, Y, [0 | Y]).
 
+ux(X, Y, [X | Y]).
+
 m0(    elision,     elision).
 m0(     normal, unbreakable).
 m0(unbreakable, unbreakable).
 
-update(Mode, 0, LL, Y, NewMode) :-
+update(Mode, X, LL, Y, NewMode) :-
+	X = 0, !,
 	u0(Mode, Y, LL),
 	m0(Mode, NewMode).
 
 update(_Mode, X, LL, Y, NewMode) :-
-	not(X = 0),
-	LL = [X | Y],
+	% implicit: X > 0,
+	ux(X, Y, LL),
 	NewMode = normal.
 
