@@ -121,23 +121,25 @@ successor(Mode, Left, [Right | Rest], M, LL, MM) :-
 	update(Mode, X, LL, Y, NewMode),
 	successor(NewMode, Right, Rest, M1, Y, MM).
 
-u0(    elision, Y,      Y ).
-u0(     normal, Y, [0 | Y]).
-u0(unbreakable, Y, [0 | Y]).
-
-ux(X, Y, [X | Y]).
-
-m0(    elision,     elision).
-m0(     normal, unbreakable).
-m0(unbreakable, unbreakable).
-
 update(Mode, X, LL, Y, NewMode) :-
 	X = 0, !,
-	u0(Mode, Y, LL),
-	m0(Mode, NewMode).
+	append_rule_zero(Mode, Y, LL),
+	mode_rule_zero(Mode, NewMode).
 
 update(_Mode, X, LL, Y, NewMode) :-
 	% implicit: X > 0,
-	ux(X, Y, LL),
-	NewMode = normal.
+	append_rule_nonzero(X, Y, LL),
+	mode_rule_nonzero(NewMode).
+
+append_rule_zero(    elision, Y,      Y ).
+append_rule_zero(     normal, Y, [0 | Y]).
+append_rule_zero(unbreakable, Y, [0 | Y]).
+
+append_rule_nonzero(X, Y, [X | Y]).
+
+mode_rule_zero(    elision,     elision).
+mode_rule_zero(     normal, unbreakable).
+mode_rule_zero(unbreakable, unbreakable).
+
+mode_rule_nonzero(normal).
 
