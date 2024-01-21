@@ -130,26 +130,25 @@ successor(elision, Left, [Right | Rest], M, LL, MM) :-
 successor(normal, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
-	LL = [X | Y],
 	M1 is M - X,
 	(
 		(X = 0)
 	->
-		(NewMode = unbreakable)
+		(LL = [X | Y], NewMode = unbreakable)
 	;
-		(NewMode = normal)
+		(LL = [X | Y], NewMode = normal)
 	),
 	successor(NewMode, Right, Rest, M1, Y, MM).
 
-successor(unbreakable, Left, [Right | Rest], M, [X | Y], MM) :-
+successor(unbreakable, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
 	(
 		(X = 0)
 	->
-		(NewMode = unbreakable)
+		(LL = [X | Y], NewMode = unbreakable)
 	;
-		(NewMode = normal)
+		(LL = [X | Y], NewMode = normal)
 	),
 	successor(NewMode, Right, Rest, M1, Y, MM).
