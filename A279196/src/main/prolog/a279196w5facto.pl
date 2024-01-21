@@ -119,7 +119,7 @@ last(Left, M, LL, MM) :-
 
 successor(normal, _Left, _L, M, [], M).
 
-successor(elision, Left, [], M, LL, MM) :-
+successor(_Mode, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
 
 successor(elision, Left, [Right | Rest], M, LL, MM) :-
@@ -134,10 +134,6 @@ successor(elision, Left, [Right | Rest], M, LL, MM) :-
 		(LL = [X | Y], successor(normal, Right, Rest, M1, Y, MM))
 	).
 
-
-successor(normal, Left, [], M, LL, MM) :-
-	last(Left, M, LL, MM).
-
 successor(normal, _Left, [Right | Rest], M, LL, MM) :-
 	X = 0,
 	LL = [X | Y],
@@ -151,8 +147,6 @@ successor(normal, Left, [Right | Rest], M, LL, MM) :-
 	M1 is M - X,
 	successor(normal, Right, Rest, M1, Y, MM).
 
-successor(unbreakable, Left, [], M, LL, MM) :-
-	last(Left, M, LL, MM).
 
 successor(unbreakable, Left, [Right | Rest], M, [X | Y], MM) :-
 	Max is min(Left + Right, M),
