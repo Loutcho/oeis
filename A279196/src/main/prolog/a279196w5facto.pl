@@ -117,6 +117,8 @@ last(Left, M, LL, MM) :-
 % - LL = the current row being built from the previous one
 % - MM = the remaining sum of values that one will have to put under LL
 
+successor(normal, _Left, _L, M, [], M).
+
 successor(elision, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
 
@@ -132,9 +134,6 @@ successor(elision, Left, [Right | Rest], M, LL, MM) :-
 		(LL = [X | Y], successor(normal, Right, Rest, M1, Y, MM))
 	).
 
-successor(normal, _Left, _, M, LL, MM) :-
-	LL = [],
-	MM = M.
 
 successor(normal, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
