@@ -125,19 +125,16 @@ new_mode_when_0(    elision,     elision).
 new_mode_when_0(     normal, unbreakable).
 new_mode_when_0(unbreakable, unbreakable).
 
-update(elision, X, LL, Y, NewMode) :-
-	X = 0,
+update(elision, 0, LL, Y, NewMode) :-
 	LL = Y,
 	new_mode_when_0(elision, NewMode).
 
-update(normal, X, LL, Y, NewMode) :-
-	X = 0,
-	LL = [X | Y],
+update(normal, 0, LL, Y, NewMode) :-
+	LL = [0 | Y],
 	new_mode_when_0(normal, NewMode).
 
-update(unbreakable, X, LL, Y, NewMode) :-
-	X = 0,
-	LL = [X | Y],
+update(unbreakable, 0, LL, Y, NewMode) :-
+	LL = [0 | Y],
 	new_mode_when_0(unbreakable, NewMode).
 
 update(_Mode, X, LL, Y, NewMode) :-
