@@ -113,20 +113,15 @@ last(Left, M, LL, MM) :-
 	MM is M - X.
 
 % ------------------------------------------------------------------------------
-% The s_* predicates:
-% - all have a (+Left, +L, +M, -LL, -MM) signature;
-% - recursively build a successor of (Left, L, M) and put the result in (LL, MM)
+% successor(+Mode, +Left, +L, +M, -LL, -MM) is nondet
+% - recursively builds a successor of (Left, L, M) and puts the result in (LL, MM)
 % where:
+% - Mode = the processing mode
 % - Left = the value in the previous row, on the "left of the cursor"
 % - L = the values in the previous row, on the "right" of the cursor"
 % - M = the mass that can be Pascal distributed under Left and L
 % - LL = the current row being built from the previous one
 % - MM = the remaining sum of values that one will have to put under LL
-
-% ------------------------------------------------------------------------------
-% s_elision(+Left, +L, +M, -LL, -MM)
-% manages the case when a sequence of leading zeroes is ongoing in LL
-% with the consequences that they are elidable and that one cannot stop there.
 
 successor(elision, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
@@ -142,10 +137,6 @@ successor(elision, Left, [Right | Rest], M, LL, MM) :-
 	;
 		(LL = [X | Y], successor(normal, Right, Rest, M1, Y, MM))
 	).
-
-% ------------------------------------------------------------------------------
-% s_normal(+Left, +L, +M, -LL, -MM)
-% manages the "normal" case when the previous number in LL was not zero.
 
 successor(normal, Left, [], M, LL, MM) :-
 	stop(M, LL, MM)
@@ -168,12 +159,6 @@ successor(normal, Left, [Right | Rest], M, LL, MM) :-
 	LL = [X | Y],
 	M1 is M - X,
 	successor(normal, Right, Rest, M1, Y, MM).
-
-% ------------------------------------------------------------------------------
-% s_unbreakable(+Left, +L, +M, -LL, -MM)
-% manages the case when a sequence of zeroes in ongoing in LL
-% but it's not a sequence of leading zeroes. These zeroes are internal.
-% The consequence is: one cannot stop there.
 
 successor(unbreakable, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
