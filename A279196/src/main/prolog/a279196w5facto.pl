@@ -92,7 +92,7 @@ w(L / M, W) :-
 % ww(+L / +M, -WW) is nondet.
 % a successor LL of L / M is such that w(LL, M - |LL|) is equal to WW.
 ww(L / M, WW) :-
-	s_elision(0, L, M, LL, MM),
+	successor(elision, 0, L, M, LL, MM),
 	w(LL / MM, WW).
 
 % -----------------------------------------------------------------------------
@@ -128,46 +128,46 @@ last(Left, M, LL, MM) :-
 % manages the case when a sequence of leading zeroes is ongoing in LL
 % with the consequences that they are elidable and that one cannot stop there.
 
-s_elision(Left, [], M, LL, MM) :-
+successor(elision, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
 
-s_elision(Left, [Right | Rest], M, LL, MM) :-
+successor(elision, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
 	(
 		(X = 0)
 	->
-		(LL = Y, s_elision(Right, Rest, M1, Y, MM))
+		(LL = Y, successor(elision, Right, Rest, M1, Y, MM))
 	;
-		(LL = [X | Y], s_normal(Right, Rest, M1, Y, MM))
+		(LL = [X | Y], successor(normal, Right, Rest, M1, Y, MM))
 	).
 
 % ------------------------------------------------------------------------------
 % s_normal(+Left, +L, +M, -LL, -MM)
 % manages the "normal" case when the previous number in LL was not zero.
 
-s_normal(Left, [], M, LL, MM) :-
+successor(normal, Left, [], M, LL, MM) :-
 	stop(M, LL, MM)
 	;
 	last(Left, M, LL, MM).
 
-s_normal(_Left, [Right | Rest], M, LL, MM) :-
+successor(normal, _Left, [Right | Rest], M, LL, MM) :-
 	stop(M, LL, MM)
 	;
 	(
 		X = 0,
 		LL = [X | Y],
 		M1 is M - X,
-		s_unbreakable(Right, Rest, M1, Y, MM)
+		successor(unbreakable, Right, Rest, M1, Y, MM)
 	).
 
-s_normal(Left, [Right | Rest], M, LL, MM) :-
+successor(normal, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(1, Max, X),
 	LL = [X | Y],
 	M1 is M - X,
-	s_normal(Right, Rest, M1, Y, MM).
+	successor(normal, Right, Rest, M1, Y, MM).
 
 % ------------------------------------------------------------------------------
 % s_unbreakable(+Left, +L, +M, -LL, -MM)
@@ -175,11 +175,11 @@ s_normal(Left, [Right | Rest], M, LL, MM) :-
 % but it's not a sequence of leading zeroes. These zeroes are internal.
 % The consequence is: one cannot stop there.
 
-s_unbreakable(Left, [], M, LL, MM) :-
+successor(unbreakable, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
 
-s_unbreakable(Left, [Right | Rest], M, [X | Y], MM) :-
+successor(unbreakable, Left, [Right | Rest], M, [X | Y], MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
-	((X = 0) -> s_unbreakable(Right, Rest, M1, Y, MM) ; s_normal(Right, Rest, M1, Y, MM)).
+	((X = 0) -> successor(unbreakable, Right, Rest, M1, Y, MM) ; successor(normal, Right, Rest, M1, Y, MM)).
