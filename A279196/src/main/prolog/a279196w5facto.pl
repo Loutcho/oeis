@@ -138,4 +138,5 @@ successor(unbreakable, Left, [Right | Rest], M, [X | Y], MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
-	((X = 0) -> successor(unbreakable, Right, Rest, M1, Y, MM) ; successor(normal, Right, Rest, M1, Y, MM)).
+	(X = 0 -> (NewMode = unbreakable) ; (NewMode = normal)),
+	successor(NewMode, Right, Rest, M1, Y, MM).
