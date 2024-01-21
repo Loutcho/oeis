@@ -114,25 +114,11 @@ successor(_Mode, Left, [], M, LL, MM) :-
 	LL = [X],
 	MM is M - X.
 
-successor(elision, Left, [Right | Rest], M, LL, MM) :-
+successor(Mode, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
-	update(elision, X, LL, Y, NewMode),
-	successor(NewMode, Right, Rest, M1, Y, MM).
-
-successor(normal, Left, [Right | Rest], M, LL, MM) :-
-	Max is min(Left + Right, M),
-	between(0, Max, X),
-	M1 is M - X,
-	update(normal, X, LL, Y, NewMode),
-	successor(NewMode, Right, Rest, M1, Y, MM).
-
-successor(unbreakable, Left, [Right | Rest], M, LL, MM) :-
-	Max is min(Left + Right, M),
-	between(0, Max, X),
-	M1 is M - X,
-	update(unbreakable, X, LL, Y, NewMode),
+	update(Mode, X, LL, Y, NewMode),
 	successor(NewMode, Right, Rest, M1, Y, MM).
 
 update(elision, X, LL, Y, NewMode) :-
