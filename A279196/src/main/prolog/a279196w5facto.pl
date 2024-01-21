@@ -95,17 +95,6 @@ ww(L / M, WW) :-
 	successor(elision, 0, L, M, LL, MM),
 	w(LL / MM, WW).
 
-% -----------------------------------------------------------------------------
-% Technical predicates for code factorization:
-
-% last(+Left, +M, -LL, -MM).
-% Manages the common case when LL stops with the element being chosen which cannot be 0.
-last(Left, M, LL, MM) :-
-	Max is min(Left, M),
-	between(1, Max, X),
-	LL = [X],
-	MM is M - X.
-
 % ------------------------------------------------------------------------------
 % successor(+Mode, +Left, +L, +M, -LL, -MM) is nondet
 % - recursively builds a successor of (Left, L, M) and puts the result in (LL, MM)
@@ -120,7 +109,10 @@ last(Left, M, LL, MM) :-
 successor(normal, _Left, _L, M, [], M).
 
 successor(_Mode, Left, [], M, LL, MM) :-
-	last(Left, M, LL, MM).
+	Max is min(Left, M),
+	between(1, Max, X),
+	LL = [X],
+	MM is M - X.
 
 successor(elision, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
