@@ -138,20 +138,17 @@ successor(elision, Left, [Right | Rest], M, LL, MM) :-
 		(LL = [X | Y], successor(normal, Right, Rest, M1, Y, MM))
 	).
 
+successor(normal, _Left, _, M, LL, MM) :-
+	stop(M, LL, MM).
+
 successor(normal, Left, [], M, LL, MM) :-
-	stop(M, LL, MM)
-	;
 	last(Left, M, LL, MM).
 
 successor(normal, _Left, [Right | Rest], M, LL, MM) :-
-	stop(M, LL, MM)
-	;
-	(
-		X = 0,
-		LL = [X | Y],
-		M1 is M - X,
-		successor(unbreakable, Right, Rest, M1, Y, MM)
-	).
+	X = 0,
+	LL = [X | Y],
+	M1 is M - X,
+	successor(unbreakable, Right, Rest, M1, Y, MM).
 
 successor(normal, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
