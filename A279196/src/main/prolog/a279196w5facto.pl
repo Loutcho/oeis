@@ -129,17 +129,9 @@ m0(    elision,     elision).
 m0(     normal, unbreakable).
 m0(unbreakable, unbreakable).
 
-update(elision, 0, LL, Y, NewMode) :-
-	u0(elision, Y, LL),
-	m0(elision, NewMode).
-
-update(normal, 0, LL, Y, NewMode) :-
-	u0(normal, Y, LL),
-	m0(normal, NewMode).
-
-update(unbreakable, 0, LL, Y, NewMode) :-
-	u0(unbreakable, Y, LL),
-	m0(unbreakable, NewMode).
+update(Mode, 0, LL, Y, NewMode) :-
+	u0(Mode, Y, LL),
+	m0(Mode, NewMode).
 
 update(_Mode, X, LL, Y, NewMode) :-
 	not(X = 0),
