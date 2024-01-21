@@ -98,12 +98,6 @@ ww(L / M, WW) :-
 % -----------------------------------------------------------------------------
 % Technical predicates for code factorization:
 
-% stop(+M, -LL, -MM) is det.
-% Manages the common case when LL stops immediately: no current element.
-stop(M, LL, MM) :-
-	LL = [],
-	MM = M.
-
 % last(+Left, +M, -LL, -MM).
 % Manages the common case when LL stops with the element being chosen which cannot be 0.
 last(Left, M, LL, MM) :-
@@ -139,7 +133,8 @@ successor(elision, Left, [Right | Rest], M, LL, MM) :-
 	).
 
 successor(normal, _Left, _, M, LL, MM) :-
-	stop(M, LL, MM).
+	LL = [],
+	MM = M.
 
 successor(normal, Left, [], M, LL, MM) :-
 	last(Left, M, LL, MM).
