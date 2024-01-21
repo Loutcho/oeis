@@ -126,25 +126,25 @@ update(elision, X, LL, Y, NewMode) :-
 	LL = Y,
 	NewMode = elision.
 
+update(normal, X, LL, Y, NewMode) :-
+	X = 0,
+	LL = [X | Y],
+	NewMode = unbreakable.
+
+update(unbreakable, X, LL, Y, NewMode) :-
+	X = 0,
+	LL = [X | Y],
+	NewMode = unbreakable.
+
 update(elision, X, LL, Y, NewMode) :-
 	not(X = 0),
 	LL = [X | Y],
 	NewMode = normal.
 
 update(normal, X, LL, Y, NewMode) :-
-	X = 0,
-	LL = [X | Y],
-	NewMode = unbreakable.
-
-update(normal, X, LL, Y, NewMode) :-
 	not(X = 0),
 	LL = [X | Y],
 	NewMode = normal.
-
-update(unbreakable, X, LL, Y, NewMode) :-
-	X = 0,
-	LL = [X | Y],
-	NewMode = unbreakable.
 
 update(unbreakable, X, LL, Y, NewMode) :-
 	not(X = 0),
