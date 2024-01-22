@@ -9,8 +9,8 @@
 % - all the numbers of possible Q's with a given mass are computed recursively.
 % - the top level progression is by antidiagonals.
 % - the progression in an antidiagonal is from left to right.
-% - the choices for X depend on Left, Right, on the remaining mass to distribute
-%   and on the "mode" dictated by the assignments that precede X in LL.
+% - the choices for X depend on Left, Right, on the remaining mass M to distribute
+%   and on the "mode" dictated by the history of choices that preceded X in LL.
 %
 %       / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
 %      /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \
@@ -22,8 +22,12 @@
 %  |     |     |     |     |     |     |     |     |     |     |     |     |
 %   \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   /
 %    \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /
+%                                         
+%                                         |
+%                                        / \     ----> direction of progression
+%                                      current
 %
-%                           0 <= X <= min(M, Left + Right)
+%  Fundamental inequality: 0 <= X <= min(Left + Right, M)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -92,94 +96,57 @@ w(L / M, W) :-
 % ww(+L / +M, -WW) is nondet.
 % a successor LL of L / M is such that w(LL, M - |LL|) is equal to WW.
 ww(L / M, WW) :-
-	s_elision(0, L, M, LL, MM),
+	successor(L / M, LL / MM),
 	w(LL / MM, WW).
 
-% -----------------------------------------------------------------------------
-% Technical predicates for code factorization:
+% successor(+L / +M, -LL) is nondet.
+% % LL is a successor of (L, M)
+successor(L / M, LL / MM) :-
+	build_successor(elision, 0, L, M, LL, MM).
 
-% stop(+M, -LL, -MM) is det.
-% Manages the common case when LL stops immediately: no current element.
-stop(M, LL, MM) :-
-	LL = [],
-	MM = M.
+% ------------------------------------------------------------------------------
+% build_successor(+Mode, +Left, +L, +M, -LL, -MM) is nondet
+%
+% Builds a chunk of the successor thanks to chunks of the initial list.
+% Intended for recursive usage: instantiates an element X and then calls
+% itself with strictly smaller chunks located on the right of X.
+% - Mode = a processing mode among:
+%     - elision: zeroes on the left of L' are potentially to be elided.
+%     - regular: the element of L' before X was not zero, implying.
+%     - nobreak: a nonbreaking sequence of zeroes is ongoing.
+% - Left = the value in the previous row, on the "left of the cursor"
+% - L = the values in the previous row, on the "right" of the cursor"
+% - M = the mass that can be Pascal distributed under Left and L
+% - LL = the current row being built from the previous one
+% - MM = the remaining mass that one will have to put under LL
 
-% last(+Left, +M, -LL, -MM).
-% Manages the common case when LL stops with the element being chosen which cannot be 0.
-last(Left, M, LL, MM) :-
+build_successor(regular, _Left, _L, M, [], M).
+
+build_successor(_Mode, Left, [], M, LL, MM) :-
 	Max is min(Left, M),
 	between(1, Max, X),
 	LL = [X],
 	MM is M - X.
 
-% ------------------------------------------------------------------------------
-% The s_* predicates:
-% - all have a (+Left, +L, +M, -LL, -MM) signature;
-% - recursively build a successor of (Left, L, M) and put the result in (LL, MM)
-% where:
-% - Left = the value in the previous row, on the "left of the cursor"
-% - L = the values in the previous row, on the "right" of the cursor"
-% - M = the mass that can be Pascal distributed under Left and L
-% - LL = the current row being built from the previous one
-% - MM = the remaining sum of values that one will have to put under LL
-
-% ------------------------------------------------------------------------------
-% s_elision(+Left, +L, +M, -LL, -MM)
-% manages the case when a sequence of leading zeroes is ongoing in LL
-% with the consequences that they are elidable and that one cannot stop there.
-
-s_elision(Left, [], M, LL, MM) :-
-	last(Left, M, LL, MM).
-
-s_elision(Left, [Right | Rest], M, LL, MM) :-
+build_successor(Mode, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
-	(
-		(X = 0)
-	->
-		(LL = Y, s_elision(Right, Rest, M1, Y, MM))
-	;
-		(LL = [X | Y], s_normal(Right, Rest, M1, Y, MM))
-	).
+	update(Mode, X, LL, Y, NewMode),
+	build_successor(NewMode, Right, Rest, M1, Y, MM).
 
-% ------------------------------------------------------------------------------
-% s_normal(+Left, +L, +M, -LL, -MM)
-% manages the "normal" case when the previous number in LL was not zero.
+update(Mode, X, LL, Y, NewMode) :-
+	X = 0, !, % red cut
+	append_rule_zero(Mode, Y, LL),
+	mode_rule_zero(Mode, NewMode).
 
-s_normal(Left, [], M, LL, MM) :-
-	stop(M, LL, MM)
-	;
-	last(Left, M, LL, MM).
+update(_Mode, X, [X | Y], Y, regular). % implicit: X > 0.
 
-s_normal(_Left, [Right | Rest], M, LL, MM) :-
-	stop(M, LL, MM)
-	;
-	(
-		X = 0,
-		LL = [X | Y],
-		M1 is M - X,
-		s_unbreakable(Right, Rest, M1, Y, MM)
-	).
+append_rule_zero(elision, Y,      Y ).
+append_rule_zero(regular, Y, [0 | Y]).
+append_rule_zero(nobreak, Y, [0 | Y]).
 
-s_normal(Left, [Right | Rest], M, LL, MM) :-
-	Max is min(Left + Right, M),
-	between(1, Max, X),
-	LL = [X | Y],
-	M1 is M - X,
-	s_normal(Right, Rest, M1, Y, MM).
+mode_rule_zero(elision, elision).
+mode_rule_zero(regular, nobreak).
+mode_rule_zero(nobreak, nobreak).
 
-% ------------------------------------------------------------------------------
-% s_unbreakable(+Left, +L, +M, -LL, -MM)
-% manages the case when a sequence of zeroes in ongoing in LL
-% but it's not a sequence of leading zeroes. These zeroes are internal.
-% The consequence is: one cannot stop there.
-
-s_unbreakable(Left, [], M, LL, MM) :-
-	last(Left, M, LL, MM).
-
-s_unbreakable(Left, [Right | Rest], M, [X | Y], MM) :-
-	Max is min(Left + Right, M),
-	between(0, Max, X),
-	M1 is M - X,
-	((X = 0) -> s_unbreakable(Right, Rest, M1, Y, MM) ; s_normal(Right, Rest, M1, Y, MM)).
