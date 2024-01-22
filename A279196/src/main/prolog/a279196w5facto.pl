@@ -9,8 +9,8 @@
 % - all the numbers of possible Q's with a given mass are computed recursively.
 % - the top level progression is by antidiagonals.
 % - the progression in an antidiagonal is from left to right.
-% - the choices for X depend on Left, Right, on the remaining mass to distribute
-%   and on the "mode" dictated by the assignments that precede X in LL.
+% - the choices for X depend on Left, Right, on the remaining mass M to distribute
+%   and on the "mode" dictated by the history of choices that preceded X in LL.
 %
 %       / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
 %      /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \
@@ -22,8 +22,12 @@
 %  |     |     |     |     |     |     |     |     |     |     |     |     |
 %   \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   /
 %    \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /   \ /
+%                                         
+%                                         |
+%                                        / \     ----> direction of progression
+%                                      current
 %
-%                           0 <= X <= min(M, Left + Right)
+%  Fundamental inequality: 0 <= X <= min(Left + Right, M)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -84,62 +88,65 @@ a(N, AN) :- M is N - 2, w([1] / M, AN).
 w(_ / 0, 1) :- !.
 w(L / M, W) :- memw(L / M, W), !.
 w(L / M, W) :-
-	aggregate_all(sum(WW), ww(L / M, WW), W).
-	%	assert(memw(L / M, W)),
-	%	reverse(L, L1),
-	%	((L1 = L) -> true ; assert(memw(L1 / M, W))).
+	aggregate_all(sum(WW), ww(L / M, WW), W),
+	assert(memw(L / M, W)),
+	reverse(L, L1),
+	((L1 = L) -> true ; assert(memw(L1 / M, W))).
 
 % ww(+L / +M, -WW) is nondet.
 % a successor LL of L / M is such that w(LL, M - |LL|) is equal to WW.
 ww(L / M, WW) :-
-	successor(elision, 0, L, M, LL, MM),
+	successor(L / M, LL / MM),
 	w(LL / MM, WW).
 
+% successor(+L / +M, -LL) is nondet.
+% % LL is a successor of (L, M)
+successor(L / M, LL / MM) :-
+	build_successor(elision, 0, L, M, LL, MM).
+
 % ------------------------------------------------------------------------------
-% successor(+Mode, +Left, +L, +M, -LL, -MM) is nondet
-% - recursively builds a successor of (Left, L, M) and puts the result in (LL, MM)
-% where:
-% - Mode = the processing mode
+% build_successor(+Mode, +Left, +L, +M, -LL, -MM) is nondet
+%
+% Builds a chunk of the successor thanks to chunks of the initial list.
+% Intended for recursive usage: instantiates an element X and then calls
+% itself with strictly smaller chunks located on the right of X.
+% - Mode = a processing mode among:
+%     - elision: zeroes on the left of L' are potentially to be elided.
+%     - regular: the element of L' before X was not zero, implying.
+%     - nobreak: a nonbreaking sequence of zeroes is ongoing.
 % - Left = the value in the previous row, on the "left of the cursor"
 % - L = the values in the previous row, on the "right" of the cursor"
 % - M = the mass that can be Pascal distributed under Left and L
 % - LL = the current row being built from the previous one
-% - MM = the remaining sum of values that one will have to put under LL
+% - MM = the remaining mass that one will have to put under LL
 
-successor(normal, _Left, _L, M, [], M).
+build_successor(regular, _Left, _L, M, [], M).
 
-successor(_Mode, Left, [], M, LL, MM) :-
+build_successor(_Mode, Left, [], M, LL, MM) :-
 	Max is min(Left, M),
 	between(1, Max, X),
 	LL = [X],
 	MM is M - X.
 
-successor(Mode, Left, [Right | Rest], M, LL, MM) :-
+build_successor(Mode, Left, [Right | Rest], M, LL, MM) :-
 	Max is min(Left + Right, M),
 	between(0, Max, X),
 	M1 is M - X,
 	update(Mode, X, LL, Y, NewMode),
-	successor(NewMode, Right, Rest, M1, Y, MM).
+	build_successor(NewMode, Right, Rest, M1, Y, MM).
 
 update(Mode, X, LL, Y, NewMode) :-
-	X = 0, !,
+	X = 0, !, % red cut
 	append_rule_zero(Mode, Y, LL),
 	mode_rule_zero(Mode, NewMode).
 
-update(_Mode, X, LL, Y, NewMode) :-
-	% implicit: X > 0,
-	append_rule_nonzero(X, Y, LL),
-	mode_rule_nonzero(NewMode).
+update(_Mode, X, [X | Y], Y, regular). % implicit: X > 0.
 
-append_rule_zero(    elision, Y,      Y ).
-append_rule_zero(     normal, Y, [0 | Y]).
-append_rule_zero(unbreakable, Y, [0 | Y]).
+append_rule_zero(elision, Y,      Y ).
+append_rule_zero(regular, Y, [0 | Y]).
+append_rule_zero(nobreak, Y, [0 | Y]).
 
-append_rule_nonzero(X, Y, [X | Y]).
-
-mode_rule_zero(    elision,     elision).
-mode_rule_zero(     normal, unbreakable).
-mode_rule_zero(unbreakable, unbreakable).
-
-mode_rule_nonzero(normal).
+mode_rule_zero(elision, elision).
+mode_rule_zero(regular, nobreak).
+mode_rule_zero(nobreak, nobreak).
 
