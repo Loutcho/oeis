@@ -78,7 +78,7 @@ main(NMax) :-
 	).
 
 % a(+N, -AN) is det.
-% AN provides the value of A27196(N).
+% AN provides the value of A279196(N).
 a(N, AN) :- N = 1, !, AN = 1.
 a(N, AN) :- M is N - 2, w([1] / M, AN).
 
@@ -100,7 +100,7 @@ ww(L / M, WW) :-
 	w(LL / MM, WW).
 
 % successor(+L / +M, -LL) is nondet.
-% % LL is a successor of (L, M)
+% LL is a successor of (L, M)
 successor(L / M, LL / MM) :-
 	build_successor(elision, 0, L, M, LL, MM).
 
@@ -111,9 +111,11 @@ successor(L / M, LL / MM) :-
 % Intended for recursive usage: instantiates an element X and then calls
 % itself with strictly smaller chunks located on the right of X.
 % - Mode = a processing mode among:
-%     - elision: zeroes on the left of L' are potentially to be elided.
-%     - regular: the element of L' before X was not zero, implying.
-%     - nobreak: a nonbreaking sequence of zeroes is ongoing.
+%     - elision: zeroes on the left of L' are potentially to be elided;
+%     - regular: the element of L' before X was not zero,
+%       implying that it's always possible to stop with X;
+%     - nobreak: a sequence of zeroes is ongoing,
+%       implying it's not possible to stop with X.
 % - Left = the value in the previous row, on the "left of the cursor"
 % - L = the values in the previous row, on the "right" of the cursor"
 % - M = the mass that can be Pascal distributed under Left and L
