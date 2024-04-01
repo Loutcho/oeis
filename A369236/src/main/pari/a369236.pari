@@ -1,0 +1,5 @@
+\\ Equivalent, recursive forms
+
+a1(n)=if(n<=1,n,my(s=sqrtint(n),ss=s^2);if(n==ss,1+a(s),n-ss+a(ss)))
+
+a2(n)=if(n<=1,n,my(r,s=sqrtint(n,&r),ss=s^2);if(n==ss,1+a(s),r+a(ss)))
