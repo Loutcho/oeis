@@ -1,8 +1,11 @@
-unique_id(X) :-
-	uuid(UUID),
-	atom_string(UUID, S),
-	split_string(S, "-", "", L),
-	nth1(5, L, X).
+unique_id(X) :- uuid(X).
+
+% Abbreviated version. Risky.
+%unique_id(X) :-
+%	uuid(UUID),
+%	atom_string(UUID, S),
+%	split_string(S, "-", "", L),
+%	nth1(5, L, X).
 
 graphviz_node(Node) :-
 	Node = node(id(Id), number(Number), prev(Prev), next(Next)),
@@ -93,37 +96,20 @@ state_add_node(StateIn, Node, StateOut) :-
 	StateOut = state(nodes([Node | Nodes]), Edges, Seed).
 
 state_upd_node(StateIn, NewNode, StateOut) :-
-	writeln('state_upd_node IN'),
 	StateIn = state(nodes(Nodes), Edges, Seed),
-	writeln('state_upd_node -- stile alive 1'),
-	writeln('DEBUG: NewNode' = NewNode),
 	NewNode = node(id(Id), _Number, _Prev, _Next),
-	writeln('state_upd_node -- stile alive 2'),
 	OldNode = node(id(Id), _, _, _),
-	writeln('state_upd_node -- stile alive 3'),
 	select(OldNode, Nodes,  NodesWithoutOldNode),
-	writeln('state_upd_node -- stile alive 4'),
 	NewNodes = [NewNode | NodesWithoutOldNode],
-	writeln('state_upd_node -- stile alive 5'),
-	StateOut = state(nodes(NewNodes), Edges, Seed),
-	writeln('state_upd_node -- stile alive 6'),
-	writeln('state_upd_node OUT').
+	StateOut = state(nodes(NewNodes), Edges, Seed).
 
 state_upd_edge(StateIn, NewEdge, StateOut) :-
-	writeln('state_upd_edge IN'),
 	StateIn = state(Nodes, edges(Edges), Seed),
-	writeln('state_upd_edge -- still alive A'),
 	NewEdge = edge(id(Id), _Prev, _Next, _Partner),
-	writeln('state_upd_edge -- still alive B'),
 	OldEdge = edge(id(Id), _, _, _),
-	writeln('state_upd_edge -- still alive C'),
 	select(OldEdge, Edges,  EdgesWithoutOldEdge),
-	writeln('state_upd_edge -- still alive D'),
 	NewEdges = [NewEdge | EdgesWithoutOldEdge],
-	writeln('state_upd_edge -- still alive E'),
-	StateOut = state(Nodes, edges(NewEdges), Seed),
-	writeln('state_upd_edge -- still alive F'),
-	writeln('state_upd_edge OUT').
+	StateOut = state(Nodes, edges(NewEdges), Seed).
 
 state_add_edge(StateIn, Edge, StateOut) :-
 	StateIn = state(Nodes, edges(Edges), Seed),
@@ -148,14 +134,11 @@ state_get_seed(State, Seed) :-
 
 cross_left(StateIn, StateOut) :-
 	state_get_seed(StateIn, Seed),
-	maplist(write, ['DEBUG: Seed=', Seed, '\n']),
 	S1 = Seed, unique_id(S2), unique_id(S3), unique_id(S4), unique_id(TT),
 	unique_id(S1_S2), unique_id(S2_TT), unique_id(TT_S3), unique_id(S4_S4),
 
 	state_get_node(StateIn, Seed, node(id(Seed), number(M), prev(Q), next(R))),
-	maplist(write, ['DEBUG: M=', M, ', Q=', Q, ', R=', R, '\n']),
 	N is M + 1,
-	maplist(write, ['DEBUG: N=', N, '\n']),
 
 	Node_S1    = node(id(S1   ), number(M), prev(Q    ), next(S1_S2)                ),
 	Edge_S1_S2 = edge(id(S1_S2),            prev(S1   ), next(S2   ), partner(S4_S4)),
@@ -167,30 +150,18 @@ cross_left(StateIn, StateOut) :-
 	Node_S4    = node(id(S4   ), number(M), prev(S4_S4), next(S4_S4)                ),
 	Edge_S4_S4 = edge(id(S4_S4),            prev(S4   ), next(S4   ), partner(S1_S2)),
 	
-	writeln('Still alive 1'),
-
 	state_get_edge(StateIn, R, Edge_R),
 	edge_upd_prev(Edge_R, S3, NewEdge_R),
 	
-	writeln('Still alive 2'),
 	state_upd_node(StateIn , Node_S1   , State001),
-	writeln('Still alive 3'),
 	state_add_edge(State001, Edge_S1_S2, State002),
-	writeln('Still alive 4'),
 	state_add_node(State002, Node_S2   , State003),
-	writeln('Still alive 5'),
 	state_add_edge(State003, Edge_S2_TT, State004),
-	writeln('Still alive 6'),
 	state_add_node(State004, Node_TT   , State005),
-	writeln('Still alive 7'),
 	state_add_edge(State005, Edge_TT_S3, State006),
-	writeln('Still alive 8'),
 	state_upd_edge(State006, NewEdge_R , State007),
-	writeln('Still alive 9'),
 	state_add_node(State007, Node_S3   , State008),
-	writeln('Still alive 10'),
 	state_add_node(State008, Node_S4   , State009),
-	writeln('Still alive 11'),
 	state_add_edge(State009, Edge_S4_S4, State010),
 	state_upd_seed(State010, TT, StateOut).
 	
