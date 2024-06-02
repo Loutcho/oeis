@@ -22,7 +22,9 @@ graphviz_edge(Edge) :-
 	(
 		Partner = none
 		->
-			maplist(write, ['\t"none" [shape = "none" label = "&#8709;"];\n'])
+			%maplist(write, ['\t"none" [shape = "none" label = "&#8709;"];\n'])
+			maplist(write, ['\t"none" [shape = "none" label = " &#x20E0;"];\n'])
+			
 		;
 		true
 	),
@@ -36,8 +38,8 @@ graphviz_state(State) :-
 		seed(Seed)
 	),
 	maplist(write, ['digraph G {\n']),
-	maplist(write, ['\tseed [shape = "none" label = "&#9765;"];\n']),
-	maplist(write, ['\tseed -> "', Seed, '" [arrowhead = "none" style = "dashed"];\n']),
+	maplist(write, ['\tseed [shape = "none" label = "&#9765;" fontsize = "28.0"];\n']),
+	maplist(write, ['\tseed -> "', Seed, '" [dir = "both" arrowhead = "none" arrowtail = "onormal" style = "dashed"];\n']),
 	forall(member(Node, Nodes), graphviz_node(Node)),
 	forall(member(Edge, Edges), graphviz_edge(Edge)),
 	maplist(write, ['}\n']),
@@ -74,7 +76,7 @@ make_move(S, M, SS) :-
 	(
 		(Next = Seed, cross_left(S, SS))
 	;
-		(Prev = Seed, cross_right)
+		(Prev = Seed, cross_right(S, SS))
 	;
 		(not(Next = Seed), not(Prev = Seed), cross)
 	).
@@ -115,6 +117,16 @@ state_add_edge(StateIn, Edge, StateOut) :-
 	StateIn = state(Nodes, edges(Edges), Seed),
 	StateOut = state(Nodes, edges([Edge | Edges]), Seed).
 
+state_add_edges(State, [], State).
+state_add_edges(StateIn, [Head | Tail], StateOut) :-
+	state_add_edge(StateIn, Head, StateTmp),
+	state_add_edges(StateTmp, Tail, StateOut).
+
+state_add_nodes(State, [], State).
+state_add_nodes(StateIn, [Head | Tail], StateOut) :-
+	state_add_node(StateIn, Head, StateTmp),
+	state_add_nodes(StateTmp, Tail, StateOut).
+
 state_upd_seed(StateIn, NewSeed, StateOut) :-
 	StateIn = state(Nodes, Edges, _OldSeed),
 	StateOut = state(Nodes, Edges, seed(NewSeed)).
@@ -150,24 +162,45 @@ cross_left(StateIn, StateOut) :-
 	Node_S4    = node(id(S4   ), number(M), prev(S4_S4), next(S4_S4)                ),
 	Edge_S4_S4 = edge(id(S4_S4),            prev(S4   ), next(S4   ), partner(S1_S2)),
 	
-	state_get_edge(StateIn, R, Edge_R),
+	state_upd_node(StateIn , Node_S1, State001),
+	
+	state_add_nodes(State001, [Node_S2, Node_TT, Node_S3, Node_S4], State002),
+	state_add_edges(State002, [Edge_S1_S2, Edge_S2_TT, Edge_TT_S3, Edge_S4_S4], State003),
+	
+	state_get_edge(State003, R, Edge_R),
 	edge_upd_prev(Edge_R, S3, NewEdge_R),
-	
-	state_upd_node(StateIn , Node_S1   , State001),
-	state_add_edge(State001, Edge_S1_S2, State002),
-	state_add_node(State002, Node_S2   , State003),
-	state_add_edge(State003, Edge_S2_TT, State004),
-	state_add_node(State004, Node_TT   , State005),
-	state_add_edge(State005, Edge_TT_S3, State006),
-	state_upd_edge(State006, NewEdge_R , State007),
-	state_add_node(State007, Node_S3   , State008),
-	state_add_node(State008, Node_S4   , State009),
-	state_add_edge(State009, Edge_S4_S4, State010),
-	state_upd_seed(State010, TT, StateOut).
-	
+	state_upd_edge(State003, NewEdge_R, State004),
 
-cross_right :-
-	writeln(cross_right).
+	state_upd_seed(State004, TT, StateOut).
+
+cross_right(StateIn, StateOut) :-
+	state_get_seed(StateIn, Seed),
+	S1 = Seed, unique_id(S2), unique_id(S3), unique_id(S4), unique_id(TT),
+	unique_id(S1_TT), unique_id(TT_S2), unique_id(S2_S3), unique_id(S4_S4),
+	
+	state_get_node(StateIn, Seed, node(id(Seed), number(M), prev(Q), next(R))),
+	N is M + 1,
+	
+	Node_S1    = node(id(S1   ), number(M), prev(Q    ), next(S1_TT)                ),
+	Edge_S1_TT = edge(id(S1_TT),            prev(S1   ), next(TT   ), partner(TT_S2)),
+	Node_TT    = node(id(TT   ), number(N), prev(S1_TT), next(TT_S2)                ),
+	Edge_TT_S2 = edge(id(TT_S2),            prev(TT   ), next(S2   ), partner(S1_TT)),
+	Node_S2    = node(id(S2   ), number(M), prev(TT_S2), next(S2_S3)                ),
+	Edge_S2_S3 = edge(id(S2_S3),            prev(S2   ), next(S3   ), partner(S4_S4)),
+	Node_S3    = node(id(S3   ), number(M), prev(S2_S3), next(R    )                ),
+	Node_S4    = node(id(S4   ), number(M), prev(S4_S4), next(S4_S4)                ),
+	Edge_S4_S4 = edge(id(S4_S4),            prev(S4   ), next(S4   ), partner(S2_S3)),
+	
+	state_upd_node(StateIn, Node_S1, State001),
+	
+	state_add_nodes(State001, [Node_TT, Node_S2, Node_S3, Node_S4], State002),
+	state_add_edges(State002, [Edge_S1_TT, Edge_TT_S2, Edge_S2_S3, Edge_S4_S4], State003),
+	
+	state_get_edge(State003, R, Edge_R),
+	edge_upd_prev(Edge_R, S3, NewEdge_R),
+	state_upd_edge(State003, NewEdge_R, State004),
+	
+	state_upd_seed(State004, TT, StateOut).
 
 cross :-
 	writeln(cross).
@@ -175,6 +208,5 @@ cross :-
 go :-
 	initial_state(S0),
 	cross_left(S0, S1),
-	cross_left(S1, S2),
-	cross_left(S2, S3),
-	graphviz_state(S3).
+	cross_right(S1, S2),
+	graphviz_state(S2).
