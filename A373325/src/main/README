@@ -1,0 +1,50 @@
+The C program ncurve takes in input (command line arguments) a sequence S of integers that are move numbers
+in the process of intersecting a semi infinite curve n times with itself.
+
+It provides in output the number n of legal moves in the state that results from applying the moves of the sequence, starting from the initial state with no intersection.
+
+Thus, the program may next time be called with a sequence of integers (S i) in input, concatenation of S and of i,
+where i is between 1 and n inclusive.
+
+This makes it possible to explore the tree of all possible combinations of moves,
+in a rather unusual way: over several independent program executions.
+That's why we provide shell scripts as well to exploit the program.
+
+Example:
+
+$ cc ncurve.c -o ncurve.exe
+
+$ ./ncurve.exe
+2
+
+==> the initial state has 2 children (turn right is 1, turn left is 2)
+
+$ ./a.exe 1
+5
+
+==> the state obtained after turning right has 5 children
+
+$ ./a.exe 2
+5
+
+==> the state obtained after turning left twice has 5 children
+
+$ ./a.exe 1 1
+8
+
+==> the state obtained after turning right twice has 8 children
+
+Syntactic sugar: it is possible to use negative numbers in input. -1 is turn left and is equivalent to n.
+
+-1 == n
+-2 == n - 1
+...
+-n == 1
+
+Ideas of future improvements:
+- be able to clone a state in depth in order to let the tree exploration be done in the same program execution;
+- or be able to undo the transformation to one state's child before trying another;
+- or, the point above resembling furiously to backtracking, discard the C program and implement it in Prolog instead (==> now it's done!);
+- prevent memory leaks;
+- recycle nodes and edges in all transformations (cross left and cross right already do, but cross [neither left nor right] does not yet);
+- give access to hidden features (e.g. graphviz, or debug mode) through command lines parameters (options...);
