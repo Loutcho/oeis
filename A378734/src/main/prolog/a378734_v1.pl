@@ -24,13 +24,20 @@ from_file_to_file(M / FileIn, N / FileOut) :-
 	consult(FileIn),
 	tell(FileOut),
 	forall(level(M, State),
-		forall(descendants(1, State, Descendants),
+		(
+			%maplist(write, [debug, ' State = ', State, '\n']),
+			descendants(1, State, Descendants),
+			%maplist(write, [debug, ' Descendants = ', Descendants, '\n']),
 			forall(member(Descendant, Descendants),
-				maplist(write, ['level(', N, ', ', Descendant, ').\n'])
+				(
+					maplist(write, ['level(', N, ', ', Descendant, ').\n']),
+					flush_output
+				)
 			)
 		)
 	),
-	told.
+	told,
+	true.
 
 a(N, AN) :-
 	descendants(N, [0 - oo], Descendants),
@@ -84,6 +91,7 @@ add1_to_key(K - V, KK - V) :-
 may_move(OldState, NewState) :-
 	gen_assoc(X, OldState, CX),
 	gen_assoc(Y, OldState, CY),
+	X =< Y,
 	case_disjunction(X - CX, Y - CY, OldState, NewState).
 
 case_disjunction(X - CX, X - CX, OldState, NewState) :-

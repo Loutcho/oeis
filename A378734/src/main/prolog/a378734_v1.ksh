@@ -15,4 +15,17 @@ function evolve()
 	sort toto${N} | uniq > toto${N}s
 }
 
-evolve $1
+N=0
+
+while [ true ]
+do
+	echo "---------------- N=${N} -------------------"
+	wc -l toto${N}s
+
+	date
+	echo "Calling Prolog..."
+	evolve ${N}
+	date
+	echo "Prolog returned."
+	(( N += 1 ))
+done
