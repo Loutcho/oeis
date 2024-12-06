@@ -11,11 +11,19 @@ function evolve()
 
 	GOAL="from_file_to_file(${M} / toto${M}s, ${N} / toto${N})."
 	swipl.exe -f a378734_v1.pl -q -g "${GOAL}" -t halt
+	q=$?
+	echo "swipl exited with return code $q"
 
-	sort toto${N} | uniq > toto${N}s
+	sort toto${N}  > toto${N}r
+	q=$?
+	echo "sort exited with return code $q"
+
+	uniq toto${N}r toto${N}s
+	q=$?
+	echo "uniq exited with return code $q"
 }
 
-N=0
+N=10
 
 while [ true ]
 do
@@ -23,9 +31,9 @@ do
 	wc -l toto${N}s
 
 	date
-	echo "Calling Prolog..."
+	echo "Calling evolve($N)"
 	evolve ${N}
 	date
-	echo "Prolog returned."
+	echo "evolve returned."
 	(( N += 1 ))
 done
