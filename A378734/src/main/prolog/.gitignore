@@ -1,0 +1,8 @@
+# ignore all temporary files
+
+x.??
+y.??
+z.0[1-9]
+z.1?
+
+
