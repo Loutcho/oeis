@@ -1,27 +1,47 @@
 :- dynamic known_solution/1.
 
+%-------------------------------------------------------------------------------
+% threaded_a(+N, -Thread) is det.
+% Thread is the thread in which a(N) is executed.
+% -> Executes a(N) in a separate thread, to avoid freeze of GUI.
+
 threaded_a(N, Thread) :-
-	thread_create(a(N), Thread, [stack_limit(1 000 000 000)]).
+	thread_create(time(a(N)), Thread, [stack_limit(1 000 000 000)]).
+
+%-------------------------------------------------------------------------------
+% a(+N) is det.
+% No logical meaning. Equivalent to true.
+% Computes a(N) by side effect (logs).
 
 a(N) :-
+	log([begin]),
 	NN is 2 * N,
-	process(NN).
+	process(NN),
+	log([end]).
 
+%-------------------------------------------------------------------------------
+% process(+N) is det.
+% No logical meaning. Equivalent to true.
+% Computes the number of closed, self-avoiding, lattice paths of length N.
+% By side effects (memoization + logs).
 process(N) :-
 	format(atom(S), '~|~`0t~d~2+', [N]),
-	atom_concat('results.', S, Filename),
+	atom_concat('nresults.', S, Filename),
 	tell(Filename),
 	forall(
 		(
 			initial_state(N, InitialState),
 			not_already_known_solution(InitialState, N, Solution)
 		),
-		(
-			writeln(Solution),
-			flush_output
-		)
+		% log([Solution])
+		(writeln(Solution), flush_output)
 	),
 	told.
+
+%-------------------------------------------------------------------------------
+% initial_state(+InitialNumberOfMoves, -State) is det.
+% State is the initialised structure that suits the needs of the computation
+% for perimeter InitialNumberOfMoves.
 
 initial_state(
 	InitialNumberOfMoves,
@@ -35,6 +55,31 @@ initial_state(
 		rotation_count(0)
 	)
 ).
+
+%-------------------------------------------------------------------------------
+% not_already_known_solution(+StateIn, +Depth, -Solution) is nondet.
+
+not_already_known_solution(State0, Depth, Solution) :-
+	iterate(move, Depth, State0, State1),
+	State1 =.. Fields,
+	member(sequence(Sequence), Fields),
+	class_representative(Sequence, ClassRepresentative),
+	Solution = ClassRepresentative,
+	snake_string(ClassRepresentative, SnakeString),
+	Goal = known_solution(Solution),
+	(
+		Goal
+	->
+		(
+			log(['(fail) sequence=', Sequence, ' is equivalent to class_representative=', ClassRepresentative, ', snake_string = ', SnakeString]),
+			fail
+		)
+	;
+		(
+			log(['(success) sequence=', Sequence, ' is new. class_representative = ', ClassRepresentative, ', snake_string = ', SnakeString]),
+			assert(Goal)
+		)
+	).
 
 compute_new_direction(Direction, '.', Direction).
 compute_new_direction(OldDirection, '<', NewDirection) :-
@@ -68,12 +113,14 @@ constraint_when_x_equals_0_y_must_remain_nonnegative(X, Y) :-
 			true
 		;
 			(
-				% writeln('[x = 0 implies y >= 0]'),
+				log(['(fail) when x = 0, y should be >= 0']),
 				fail
 			)
 		)
 	).
 
+% The Manhattan-distance from current position to the origin should stay
+% less than or equal to the number of remaining moves
 constraint_distance_position_start_is_bounded(X, Y, K) :-
 	AX is abs(X),
 	AY is abs(Y),
@@ -83,19 +130,23 @@ constraint_distance_position_start_is_bounded(X, Y, K) :-
 		true
 	;
 		(
-			% writeln('[d <= k]'),
+			log(['(fail) d should be <= k']),
 			fail
 		)
 	).
 
+% The overall number of quarter turns being +4
+% (we prune the case where it is -4, which is symmetrical),
+% the distance between the current number of quarter turns and 4
+% must be less than or equal to the number of remaining moves.
 constraint_contour_winding_number_is_bounded(R, K) :-
 	(
-		abs(R - 4) =< K
+		K - abs(R - 4) >= 0
 	->
 		true
 	;
 		(
-			% writeln('[|r-4| <= k]'),
+			log(['(fail) k - |r-4| should be >= 0']),
 			fail
 		)
 	).
@@ -112,7 +163,7 @@ constraint_self_avoiding(K, NewPosition, AlreadyVisitedPositions) :-
 			true
 		;
 			(
-				% writeln('[self avoiding]'),
+				log(['(fail) must be self-avoiding']),
 				fail
 			)
 		)
@@ -138,6 +189,7 @@ move(OldState, NewState) :-
 		member(Move, ['<', '.', '>']) % < = turn left, + = move forward, > = turn right
 	),
 	atom_concat(Sequence, Move, NewSequence),
+	log(['Exploring: ', NewSequence]),
 
 	compute_new_direction(CurrentDirection, Move, NewDirection),
 	compute_new_position(CurrentPosition, NewDirection, NewPosition),
@@ -165,24 +217,24 @@ move(OldState, NewState) :-
 		current_direction(NewDirection),
 		rotation_count(NewRotationCount)
 	).
+	
+% Makes a snake string, usable on the drawing website
+% https://www.antiton.de/snake/index.html
+% And especially with paramters in URL, it is the part after the "+", e.g.:
+% https://www.antiton.de/snake/index.html?s=12+0000CC0000C 
+snake_string(S, SS) :-
+	atom_chars(S, C),
+	maplist(t, C, CC),
+	atom_chars(SS, CC).
+
+t('<', 'c').
+t('.', '0').
+t('>', 'C').
 
 desmos(point(P, Q) - point(PP, QQ), A) :-
 	format(atom(A), '((1-t)*(~d)+t*(~d),(1-t)*(~d)+t*(~d))', [P, PP, Q, QQ]).
 
-not_already_known_solution(State0, Depth, Solution) :-
-	iterate(move, Depth, State0, State1),
-	State1 =.. Fields,
-	member(sequence(Sequence), Fields),
-	class_representative(Sequence, ClassRepresentative),
-	Solution = ClassRepresentative,
-	Goal = known_solution(Solution),
-	(
-		Goal
-	->
-		fail
-	;
-		assert(Goal)
-	).
+
 
 iterate(_PredicateName, N, In, Out) :-
 	N = 0, !,
@@ -192,35 +244,54 @@ iterate(PredicateName, N, In, Out) :-
 	Goal,
 	M is N - 1,
 	iterate(PredicateName, M, Tmp, Out).
-	
-equivalent(Sequence, Equivalent) :-
-	%(Sequence1 = Sequence ; symmetric(Sequence, Sequence1)),
-	Sequence1 = Sequence,
-	(Sequence2 = Sequence1 ; term_reverse(Sequence1, Sequence2)),
-	circular_permutation(Sequence2, Equivalent).
 
-term_reverse(X, Y) :-
-	atom_chars(X, XX),
-	reverse(XX, YY),
-	atom_chars(Y, YY).
-
-s('<', '>').
-s('>', '<').
-s('+', '+').
-
-symmetric(SequenceIn, SequenceOut) :-
-	atom_chars(SequenceIn, CharsIn),
-	maplist(s, CharsIn, CharsOut),
-	atom_chars(SequenceOut, CharsOut).
-
-circular_permutation(Sequence, Equivalent) :-
-	atom_concat(Begin, End, Sequence),
-	atom_length(End, L),
-	L > 0,
-	atom_concat(End, Begin, Equivalent).
+%-------------------------------------------------------------------------------
+% class_representative(+Sequence, -ClassRepresentative) is det.
+% ClassRepresentative is the class representative of this sequence, i.e.,
+% among all the equivalents to Sequence, it is the smallest one in
+% lexicographic order of the ASCII codes of the letters '<', '.', '>'.
 
 class_representative(Sequence, ClassRepresentative) :-
 	findall(Equivalent, equivalent(Sequence, Equivalent), Equivalents),
 	sort(Equivalents, SortedEquivalents),
 	nth1(1, SortedEquivalents, ClassRepresentative).
+	
+%-------------------------------------------------------------------------------
+% equivalent(+Sequence, -Equivalent) is multi
+% Equivalent is an equivalent sequence to the provided sequence Sequence.
+% "Equivalent to" = "is a circ. perm. of or is a circ. perm. of the reverse of"
+% -> generates all the equivalents of Sequence with backtracking.
+equivalent(Sequence, Equivalent) :-
+	term_reverse(Sequence, Reverse),
+	(Reverse = Sequence -> X = [Sequence] ; X = [Sequence, Reverse]),
+	member(E, X),
+	circular_permutation(E, Equivalent).
 
+%-------------------------------------------------------------------------------
+% term_reverse(+X, -Y) is det
+% Y is the reverse term of X.
+term_reverse(X, Y) :-
+	atom_chars(X, XX),
+	reverse(XX, YY),
+	atom_chars(Y, YY).
+
+%-------------------------------------------------------------------------------
+% circular_permutation(+Sequence, -CircularPermutation) is multi
+% CircularPermutation is a circular permutation of Sequence
+% -> generates all the circular permutations of Sequence with backtracking.
+circular_permutation(Sequence, CircularPermutation) :-
+	atom_concat(Begin, End, Sequence),
+	atom_length(End, L),
+	L > 0,
+	atom_concat(End, Begin, CircularPermutation).
+
+%-------------------------------------------------------------------------------
+
+log(_Message) :- true. %stub
+%log(Message) :- real_log(Message).
+real_log(Message) :-
+	get_time(Now),
+	format_time(atom(Timestamp), '%Y/%m/%d %H:%M:%S ', Now),
+	maplist(write, [Timestamp | Message]),
+	nl,
+	flush_output.
