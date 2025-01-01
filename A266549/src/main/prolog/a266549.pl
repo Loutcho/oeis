@@ -1,5 +1,3 @@
-:- dynamic known_solution/1.
-
 %-------------------------------------------------------------------------------
 % threaded_a(+N, -Thread) is det.
 % Thread is the thread in which a(N) is executed.
@@ -14,10 +12,10 @@ threaded_a(N, Thread) :-
 % Computes a(N) by side effect (logs).
 
 a(N) :-
-	log([begin]),
+	log(debug, [begin]),
 	NN is 2 * N,
 	process(NN),
-	log([end]).
+	log(debug, [end]).
 
 %-------------------------------------------------------------------------------
 % process(+N) is det.
@@ -31,10 +29,12 @@ process(N) :-
 	forall(
 		(
 			initial_state(N, InitialState),
-			not_already_known_solution(InitialState, N, Solution)
+			solution(InitialState, N, Solution)
 		),
-		% log([Solution])
-		(writeln(Solution), flush_output)
+		(
+			log(info, [Solution])
+		)
+		%(writeln(Solution), flush_output)
 	),
 	told.
 
@@ -57,31 +57,17 @@ initial_state(
 ).
 
 %-------------------------------------------------------------------------------
-% not_already_known_solution(+StateIn, +Depth, -Solution) is nondet.
+% solution(+StateIn, +Depth, -Solution) is nondet.
 
-not_already_known_solution(State0, Depth, Solution) :-
+solution(State0, Depth, Solution) :-
 	iterate(move, Depth, State0, State1),
 	State1 =.. Fields,
 	member(sequence(Sequence), Fields),
 	class_representative(Sequence, ClassRepresentative),
-	Solution = ClassRepresentative,
 	snake_string(ClassRepresentative, SnakeString),
-	Goal = known_solution(Solution),
-	(
-		Goal
-	->
-		(
-			log(['(fail) sequence=', Sequence, ' is equivalent to class_representative=', ClassRepresentative, ', snake_string = ', SnakeString]),
-			fail
-		)
-	;
-		(
-			log(['(success) sequence=', Sequence, ' is new. class_representative = ', ClassRepresentative, ', snake_string = ', SnakeString]),
-			assert(Goal)
-		)
-	).
+	atomic_list_concat([Sequence, ClassRepresentative, SnakeString], '|', Solution).
 
-compute_new_direction(Direction, '.', Direction).
+compute_new_direction(Direction, '=', Direction).
 compute_new_direction(OldDirection, '<', NewDirection) :-
 	OldDirection = dir(DX, DY),
 	DXX is -DY,
@@ -98,8 +84,20 @@ compute_new_position(point(X, Y), dir(DX, DY), point(XX, YY)) :-
 	YY is Y + DY.
 
 rotation_count_increment('<', +1).
-rotation_count_increment('.',  0).
+rotation_count_increment('=',  0).
 rotation_count_increment('>', -1).
+
+constraint_x_must_remain_nonnegative(X) :-
+	(
+		X >= 0
+	->
+		true
+	;
+		(
+				log(debug, ['(fail) x should be >= 0']),
+				fail
+		)
+	).
 
 constraint_when_x_equals_0_y_must_remain_nonnegative(X, Y) :-
 	(
@@ -113,7 +111,7 @@ constraint_when_x_equals_0_y_must_remain_nonnegative(X, Y) :-
 			true
 		;
 			(
-				log(['(fail) when x = 0, y should be >= 0']),
+				log(debug, ['(fail) when x = 0, y should be >= 0']),
 				fail
 			)
 		)
@@ -130,7 +128,7 @@ constraint_distance_position_start_is_bounded(X, Y, K) :-
 		true
 	;
 		(
-			log(['(fail) d should be <= k']),
+			log(debug, ['(fail) d should be <= k']),
 			fail
 		)
 	).
@@ -146,7 +144,7 @@ constraint_contour_winding_number_is_bounded(R, K) :-
 		true
 	;
 		(
-			log(['(fail) k - |r-4| should be >= 0']),
+			log(debug, ['(fail) k - |r-4| should be >= 0']),
 			fail
 		)
 	).
@@ -163,7 +161,7 @@ constraint_self_avoiding(K, NewPosition, AlreadyVisitedPositions) :-
 			true
 		;
 			(
-				log(['(fail) must be self-avoiding']),
+				log(debug, ['(fail) must be self-avoiding']),
 				fail
 			)
 		)
@@ -186,16 +184,17 @@ move(OldState, NewState) :-
 	->
 		Move = '<'
 	;
-		member(Move, ['<', '.', '>']) % < = turn left, + = move forward, > = turn right
+		member(Move, ['<', '=', '>']) % < turn left, = move forward, > turn right
 	),
 	atom_concat(Sequence, Move, NewSequence),
-	log(['Exploring: ', NewSequence]),
+	log(debug, ['Exploring: ', NewSequence]),
 
 	compute_new_direction(CurrentDirection, Move, NewDirection),
 	compute_new_position(CurrentPosition, NewDirection, NewPosition),
 	NewPosition = point(XX, YY),
 
-	constraint_when_x_equals_0_y_must_remain_nonnegative(XX, YY),
+	constraint_x_must_remain_nonnegative(XX),
+	% constraint_when_x_equals_0_y_must_remain_nonnegative(XX, YY),
 
 	KK is K - 1,
 
@@ -228,7 +227,7 @@ snake_string(S, SS) :-
 	atom_chars(SS, CC).
 
 t('<', 'c').
-t('.', '0').
+t('=', '0').
 t('>', 'C').
 
 desmos(point(P, Q) - point(PP, QQ), A) :-
@@ -249,7 +248,7 @@ iterate(PredicateName, N, In, Out) :-
 % class_representative(+Sequence, -ClassRepresentative) is det.
 % ClassRepresentative is the class representative of this sequence, i.e.,
 % among all the equivalents to Sequence, it is the smallest one in
-% lexicographic order of the ASCII codes of the letters '<', '.', '>'.
+% lexicographic order of the ASCII codes of the letters '<', '=', '>'.
 
 class_representative(Sequence, ClassRepresentative) :-
 	findall(Equivalent, equivalent(Sequence, Equivalent), Equivalents),
@@ -287,11 +286,24 @@ circular_permutation(Sequence, CircularPermutation) :-
 
 %-------------------------------------------------------------------------------
 
-log(_Message) :- true. %stub
-%log(Message) :- real_log(Message).
-real_log(Message) :-
+log_conf(debug, discard).
+log_conf(info, keep).
+
+log(Level, Message) :-
+	log_conf(Level, Conf),
+	(
+		Conf = discard
+	;
+		(
+			Conf = keep,
+			real_log(Level, Message)
+		)
+	).
+
+real_log(Level, Message) :-
 	get_time(Now),
 	format_time(atom(Timestamp), '%Y/%m/%d %H:%M:%S ', Now),
-	maplist(write, [Timestamp | Message]),
+	format(atom(FLevel), '~|~` t~a~5+|', Level),
+	maplist(write, [Timestamp, FLevel | Message]),
 	nl,
 	flush_output.
