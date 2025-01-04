@@ -1,3 +1,5 @@
+:- dynamic(known/1).
+
 %-------------------------------------------------------------------------------
 % threaded_a(+N, -Thread) is det.
 % Thread is the thread in which a(N) is executed.
@@ -12,10 +14,16 @@ threaded_a(N, Thread) :-
 % Computes a(N) by side effect (logs).
 
 a(N) :-
-	log(debug, [begin]),
 	NN is 2 * N,
-	process(NN),
-	log(debug, [end]).
+	process(NN).
+
+%-------------------------------------------------------------------------------
+
+split(NN, [Lefts, Forwards, Rights]) :-
+	between(4, NN, Lefts),
+	Forwards is NN - (2 * Lefts - 4),
+	Forwards >= 0,
+	Rights is Lefts - 4.
 
 %-------------------------------------------------------------------------------
 % process(+N) is det.
@@ -24,19 +32,31 @@ a(N) :-
 % By side effects (memoization + logs).
 process(N) :-
 	format(atom(S), '~|~`0t~d~2+', [N]),
-	atom_concat('nresults.', S, Filename),
-	tell(Filename),
+	forall(
+		split(N, Split),
+		(
+			Split = [L, _F, _R],
+			format(atom(SS), '~|~`0t~d~2+', [L]),
+			atomic_list_concat(['nresults.', S, '.', SS], Filename),
+			tell(Filename),
+			log(debug, ['Split for current file is: ', Split]),
+			process_with_split(N, Split),
+			told,
+			retractall(known(_))
+		)
+	).
+
+process_with_split(N, Split) :-
 	forall(
 		(
-			initial_state(N, InitialState),
+			initial_state(N, Split, InitialState),
 			solution(InitialState, N, Solution)
 		),
 		(
-			log(info, [Solution])
+			%log(info, [Solution])
+			(writeln(Solution), flush_output)
 		)
-		%(writeln(Solution), flush_output)
-	),
-	told.
+	).
 
 %-------------------------------------------------------------------------------
 % initial_state(+InitialNumberOfMoves, -State) is det.
@@ -45,9 +65,11 @@ process(N) :-
 
 initial_state(
 	InitialNumberOfMoves,
+	Split,
 	state(
 		initial_number_of_moves(InitialNumberOfMoves),
 		remaining_number_of_moves(InitialNumberOfMoves),
+		split(Split),
 		already_visited_positions([point(0, 0)]),
 		sequence(''),
 		current_position(point(0, 0)),
@@ -64,8 +86,16 @@ solution(State0, Depth, Solution) :-
 	State1 =.. Fields,
 	member(sequence(Sequence), Fields),
 	class_representative(Sequence, ClassRepresentative),
-	snake_string(ClassRepresentative, SnakeString),
-	atomic_list_concat([Sequence, ClassRepresentative, SnakeString], '|', Solution).
+	(
+		known(ClassRepresentative)
+	->
+		fail
+	;
+		assert(known(ClassRepresentative))
+	),
+	%snake_string(ClassRepresentative, SnakeString),
+	%atomic_list_concat([Sequence, ClassRepresentative, SnakeString], '|', Solution)
+	Solution = ClassRepresentative.
 
 compute_new_direction(Direction, '=', Direction).
 compute_new_direction(OldDirection, '<', NewDirection) :-
@@ -167,24 +197,52 @@ constraint_self_avoiding(K, NewPosition, AlreadyVisitedPositions) :-
 		)
 	).
 
+
+choose_left(OldSplit, NewSplit, Move) :-
+	OldSplit = [RemainingLefts, RemainingForwards, RemainingRights],
+	RemainingLefts > 0,
+	NewRemainingLefts is RemainingLefts - 1,
+	NewSplit = [NewRemainingLefts, RemainingForwards, RemainingRights],
+	Move = '<'.
+
+choose_forward(OldSplit, NewSplit, Move) :-
+	OldSplit = [RemainingLefts, RemainingForwards, RemainingRights],
+	RemainingForwards > 0,
+	NewRemainingForwards is RemainingForwards - 1,
+	NewSplit = [RemainingLefts, NewRemainingForwards, RemainingRights],
+	Move = '='.
+
+choose_right(OldSplit, NewSplit, Move) :-
+	OldSplit = [RemainingLefts, RemainingForwards, RemainingRights],
+	RemainingRights > 0,
+	NewRemainingRights is RemainingRights - 1,
+	NewSplit = [RemainingLefts, RemainingForwards, NewRemainingRights],
+	Move = '>'.
+
 move(OldState, NewState) :- 
 
 	OldState = state(
 		initial_number_of_moves(M),
 		remaining_number_of_moves(K),
+		split(Split),
 		already_visited_positions(AlreadyVisitedPositions),
 		sequence(Sequence),
 		current_position(CurrentPosition),
 		current_direction(CurrentDirection),
 		rotation_count(RotationCount)
 	),
-
 	(
 		CurrentPosition = point(0, 0)
 	->
-		Move = '<'
+		choose_left(Split, NewSplit, Move)
 	;
-		member(Move, ['<', '=', '>']) % < turn left, = move forward, > turn right
+		(
+			choose_left(Split, NewSplit, Move)
+		;
+			choose_forward(Split, NewSplit, Move)
+		;
+			choose_right(Split, NewSplit, Move)
+		)
 	),
 	atom_concat(Sequence, Move, NewSequence),
 	log(debug, ['Exploring: ', NewSequence]),
@@ -210,6 +268,7 @@ move(OldState, NewState) :-
 	NewState = state(
 		initial_number_of_moves(M),
 		remaining_number_of_moves(KK),
+		split(NewSplit),
 		already_visited_positions([NewPosition | AlreadyVisitedPositions]),
 		sequence(NewSequence),
 		current_position(NewPosition),
