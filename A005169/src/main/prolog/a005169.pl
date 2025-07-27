@@ -3,6 +3,16 @@
 % Enumerates / counts the number of fountains with n coins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+main :-
+	forall(
+		between(0, 25, N),
+		(
+			a(N, AN),
+			maplist(write, [AN, ', ']),
+			flush_output
+		)
+	).
+
 % a(+N, -AN) is det.
 % AN is the number of fountains with N coins.
 a(N, AN) :-
@@ -13,8 +23,21 @@ a(N, AN) :-
 draw_all_fountains(N) :-
 	forall(
 		build_fountain(N, Fountain),
-		writeln(Fountain)
+		draw_fountain(Fountain)
 	).
+draw_fountain(Fountain) :-
+	draw_layer(0, Fountain),
+	writeln('-------------------').
+draw_layer(_, []).
+draw_layer(D, [Layer | Rest]) :-
+	DD is D + 1,
+	draw_layer(DD, Rest),
+	format(atom(Indent), '~t~*|', [D]),
+	write(Indent),
+	maplist(draw_pos, Layer),
+	nl.
+draw_pos(0) :- write('  ').
+draw_pos(1) :- write('()').
 
 % build_fountain(+NbCoins, -Fountain) is multi.
 % Fountain is a fountain with NbCoins coins.
@@ -49,8 +72,22 @@ build_over_layer(Layer, 0, []) :-
 build_over_layer(Layer, RemainingCoins, OverLayer) :-
 	pairs(Layer, Pairs),
 	build_layer(Pairs, RemainingCoins, NewLayer, NewRemainingCoins),
-	OverLayer = [NewLayer | NewOverLayer],
-	build_over_layer(NewLayer, NewRemainingCoins, NewOverLayer).
+	(
+		NewRemainingCoins = RemainingCoins % if no coin was used
+	-> % then the new layer is an empty one, and the building can be stopped
+		(
+				RemainingCoins = 0 % if no coin remains to be distributed
+			-> % then that's a success and we cut the building just above Layer
+				OverLayer = [] 
+			; % otherwise that's a failure
+				fail
+		)
+	; % otherwise the new layer is not empty, and the rest is obtained recursively
+		(
+			OverLayer = [NewLayer | NewOverLayer],
+			build_over_layer(NewLayer, NewRemainingCoins, NewOverLayer)
+		)
+	).
 
 % pairs(+List, -Pairs) is det.
 % Pairs is the list of ordered pairs of consecutive elements in List.
@@ -73,8 +110,6 @@ build_layer([Pair | OtherPairs], RemainingCoins, [Coin | OtherCoins], NewRemaini
 % and presence flag is Right in below-right position compared to current position,
 % and the number of remainingCoins to be distributed is RemainingCoins,
 % then Choice is a choosable presence flag for the current position.
-make_a_choice(0 - 0, _, 0).
-make_a_choice(0 - 1, _, 0).
-make_a_choice(1 - 0, _, 0).
-make_a_choice(1 - 1, _, 0).
-make_a_choice(1 - 1, R, 1) :- R > 0.
+make_a_choice(_, _, 0).
+make_a_choice(1 - 1, R, 1) :-
+	R > 0.
