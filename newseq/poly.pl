@@ -3,11 +3,14 @@
 
 main(Nmax) :-
 	init,
-	assert_is_in_S([1,1], Nmax),
-	N = 3,
-	process_deferred_computations_up_to(Nmax, N),
+	compute(Nmax),
 	export_data('data.txt', 1, Nmax),
 	export_bfile('bfile.txt', 1, Nmax).
+
+compute(Nmax) :-
+	assert_is_in_S([1,1], Nmax),
+	N = 3,
+	process_deferred_computations_up_to(Nmax, N).
 
 init :-
 	retractall(is_in_S(_, _)),
@@ -47,15 +50,22 @@ process_deferred_computations_up_to(Nmax, N) :-
 	N > Nmax.
 
 process_deferred_computations(N, Nmax) :-
+	process_deferred_computations_of_the_sigma_type(N, Nmax),
+	process_deferred_computations_of_the_product_type(N, Nmax),
+	a(N, AN),
+	maplist(write, ['a(', N, ') = ', AN, '\n']).
+
+process_deferred_computations_of_the_sigma_type(N, Nmax) :-
 	aggregate_all(count, deferred_computation(sigma(_), N), CountSigma),
 	maplist(write, ['sigma(P):', CountSigma, '\n']),
 	forall(deferred_computation(sigma(P), N),
 	(
 		retract(deferred_computation(sigma(P), N)),
-		% maplist(write, ['Processing: ', sigma(P), '\n']),
 		successor(P, Q),
 		(is_in_S(Q, _Q1) -> maplist(write, ['Unbelievable, ', Q, ' is already in S!\n']) ; assert_is_in_S(Q, Nmax))
-	)),
+	)).
+
+process_deferred_computations_of_the_product_type(N, Nmax) :-
 	aggregate_all(count, deferred_computation(_ * _, N), CountProduct),
 	maplist(write, ['P*Q: ', CountProduct, '\n']),
 	forall(deferred_computation(P * Q, N),
@@ -63,10 +73,8 @@ process_deferred_computations(N, Nmax) :-
 		retract(deferred_computation(P * Q, N)),
 		product(P, Q, PQ),
 		assert_is_in_S(PQ, Nmax)
-	)),
-	a(N, AN),
-	maplist(write, ['a(', N, ') = ', AN, '\n']).
- 
+	)).
+
 successor(P, [1 | P]).
  
 product(P, Q, PQ) :-
