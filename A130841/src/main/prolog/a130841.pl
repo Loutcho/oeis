@@ -89,3 +89,49 @@ debug_oterms(N) :-
 	),
 	aggregate_all(count, oterm(N, _), X),
 	maplist(write, ['Number: ', X, '\n']).
+
+% ------------------------------------------------------------------------------
+% Graphviz routines
+
+graphviz(Goal) :-
+	maplist(write, ['digraph G {\n']),
+	maplist(write, ['    charset = "UTF-8";\n']),
+	maplist(write, ['    rankdir = "BT";\n']),
+	maplist(write, ['    node [shape = "box" style = "filled" fillcolor = "beige"]\n']),
+	forall(Goal, (
+		Goal =.. [_Functor, _N, Object],
+		graphviz_object(Object)
+	)),
+	maplist(write, ['}\n']).
+
+graphviz_object(Object) :-
+	graphviz_object(null, Object).
+
+% Dessine l'objet Object, sachant que l'UUID du parent d'Object est Parent
+graphviz_object(Parent, Object) :-
+	is_list(Object),
+	uuid(UUID),
+	maplist(write, ['    "', UUID, '" [label = "∏"];\n']),
+	graphviz_list(UUID, Object),
+	(
+		Parent = null
+	->
+		true
+	;
+		maplist(write, ['    "', Parent, '" -> "', UUID, '";\n'])
+	).
+graphviz_object(Parent, Object) :-
+	Object = 1 + X,
+	uuid(UUID),
+	maplist(write, ['    "', UUID, '" [label = "1+"];\n']),
+	(
+		Parent = null
+	->
+		true
+	;
+		maplist(write, ['    "', Parent, '" -> "', UUID, '";\n'])
+	),
+	graphviz_object(UUID, X).
+
+graphviz_list(UUID, List) :-
+	maplist(graphviz_object(UUID), List).
