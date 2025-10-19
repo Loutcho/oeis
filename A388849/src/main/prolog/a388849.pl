@@ -158,8 +158,8 @@ delta_a(N, BN) :-
 
 % 18 is the first N such that a(N) is not equal to A130841(N). Why?
 of_interest_18 :-
-	 tell('18.txt'),
-	 forall(
+	tell('18.txt'),
+	forall(
 		is_in_S(P, 18, Pedigree),
 		writeln(P = Pedigree)
 	),
