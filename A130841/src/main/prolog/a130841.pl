@@ -93,13 +93,18 @@ debug_oterms(N) :-
 % ------------------------------------------------------------------------------
 % Graphviz routines
 
+graphviz_example :- % Generate a graphviz file illustrating a(12) = 
+	tell('a130841.gv'),
+	graphviz(oproduct(12, _)),
+	told. % Remains to use Graphviz to actually convert that to a SVG.
+
 :- dynamic counter/1.
 
 graphviz(Goal) :-
 	maplist(write, ['digraph G {\n']),
 	maplist(write, ['    charset = "UTF-8";\n']),
 	maplist(write, ['    rankdir = "BT";\n']),
-	maplist(write, ['    node [shape = "circle" style = "filled" fillcolor = "beige"]\n']),
+	maplist(write, ['    node [shape = "circle" style = "filled"]\n']),
 	retractall(counter(_)),
 	assert(counter(0)),
 	forall(Goal, (
@@ -117,50 +122,39 @@ graphviz(Goal) :-
 	)),
 	maplist(write, ['}\n']).
 
+% graphviz_object(+Object)
+% Draws the object Object, which may be an oterm, an oproduct.
 graphviz_object(Object) :-
 	graphviz_object(null, Object).
 
-% Dessine l'objet Object, sachant que l'UUID du parent d'Object est Parent
+% graphviz_edge_from_parent(+Parent, +UUID)
+% May draw an edge between Parent and UUID, depending on the value of Parent.
+graphviz_edge_from_parent(Parent, _) :- Parent = null, !.
+graphviz_edge_from_parent(Parent, UUID) :-
+	maplist(write, ['        "', Parent, '" -> "', UUID, '";\n']).
+
+% Draws the object Object and possibly also the edges from a Parent object to that Object
 graphviz_object(Parent, 1) :-
 	uuid(UUID),
-	maplist(write, ['        "', UUID, '" [label = "1" fillcolor = "white"];\n']),
-	(
-		Parent = null
-	->
-		true
-	;
-		maplist(write, ['        "', Parent, '" -> "', UUID, '";\n'])
-	).
+	maplist(write, ['        "', UUID, '" [shape = "circle" fillcolor = "white" color = "black" fontcolor = "gray" label = "1"];\n']),
+	graphviz_edge_from_parent(Parent, UUID).
 graphviz_object(Parent, []) :-
-	graphviz_object(Parent, 1).
+	graphviz_object(Parent, 1). % Simplification: do not write a product when there are no factors; directly write 1.
 graphviz_object(Parent, [UniqueObject]) :-
-	graphviz_object(Parent, UniqueObject).
+	graphviz_object(Parent, UniqueObject). % Simplification: do not write a product when there's only 1 factor; directly write that factor.
 graphviz_object(Parent, Object) :-
 	is_list(Object),
 	length(Object, Len),
 	Len > 1,
 	uuid(UUID),
-	maplist(write, ['        "', UUID, '" [shape = "square" fillcolor = "white" label = "×"];\n']),
-	graphviz_list(UUID, Object),
-	(
-		Parent = null
-	->
-		true
-	;
-		maplist(write, ['        "', Parent, '" -> "', UUID, '";\n'])
-	).
+	maplist(write, ['        "', UUID, '" [shape = "square" fillcolor = "white" color = "black" fontcolor = "gray" label = "×"];\n']),
+	graphviz_edge_from_parent(Parent, UUID),
+	graphviz_list(UUID, Object).
 graphviz_object(Parent, Object) :-
 	Object = 1 + X,
 	uuid(UUID),
-	maplist(write, ['        "', UUID, '" [label = "1+" fillcolor = "navyblue" color = "black" fontcolor = "white"];\n']),
-	(
-		Parent = null
-	->
-		true
-	;
-		maplist(write, ['        "', Parent, '" -> "', UUID, '";\n'])
-	),
+	maplist(write, ['        "', UUID, '" [shape = "circle" fillcolor = "navyblue" color = "black" fontcolor = "white" label = "1+"];\n']),
+	graphviz_edge_from_parent(Parent, UUID),
 	graphviz_object(UUID, X).
-
 graphviz_list(UUID, List) :-
 	maplist(graphviz_object(UUID), List).
