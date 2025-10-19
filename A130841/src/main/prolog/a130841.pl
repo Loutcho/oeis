@@ -93,14 +93,27 @@ debug_oterms(N) :-
 % ------------------------------------------------------------------------------
 % Graphviz routines
 
+:- dynamic counter/1.
+
 graphviz(Goal) :-
 	maplist(write, ['digraph G {\n']),
 	maplist(write, ['    charset = "UTF-8";\n']),
 	maplist(write, ['    rankdir = "BT";\n']),
-	maplist(write, ['    node [shape = "box" style = "filled" fillcolor = "beige"]\n']),
+	maplist(write, ['    node [shape = "circle" style = "filled" fillcolor = "beige"]\n']),
+	retractall(counter(_)),
+	assert(counter(0)),
 	forall(Goal, (
+		counter(OldCounter),
+		retract(counter(OldCounter)),
+		Counter is OldCounter + 1,
+		assert(counter(Counter)),
 		Goal =.. [_Functor, _N, Object],
-		graphviz_object(Object)
+		maplist(write, ['    subgraph cluster_', Counter, ' {\n']),
+		maplist(write, ['        style = "filled";\n']),
+		maplist(write, ['        fillcolor = "lightcyan";\n']),
+		maplist(write, ['        label = "#', Counter, '";\n']),
+		graphviz_object(Object),
+		maplist(write, ['    }\n'])
 	)),
 	maplist(write, ['}\n']).
 
@@ -108,28 +121,44 @@ graphviz_object(Object) :-
 	graphviz_object(null, Object).
 
 % Dessine l'objet Object, sachant que l'UUID du parent d'Object est Parent
+graphviz_object(Parent, 1) :-
+	uuid(UUID),
+	maplist(write, ['        "', UUID, '" [label = "1" fillcolor = "white"];\n']),
+	(
+		Parent = null
+	->
+		true
+	;
+		maplist(write, ['        "', Parent, '" -> "', UUID, '";\n'])
+	).
+graphviz_object(Parent, []) :-
+	graphviz_object(Parent, 1).
+graphviz_object(Parent, [UniqueObject]) :-
+	graphviz_object(Parent, UniqueObject).
 graphviz_object(Parent, Object) :-
 	is_list(Object),
+	length(Object, Len),
+	Len > 1,
 	uuid(UUID),
-	maplist(write, ['    "', UUID, '" [label = "∏"];\n']),
+	maplist(write, ['        "', UUID, '" [shape = "square" fillcolor = "white" label = "×"];\n']),
 	graphviz_list(UUID, Object),
 	(
 		Parent = null
 	->
 		true
 	;
-		maplist(write, ['    "', Parent, '" -> "', UUID, '";\n'])
+		maplist(write, ['        "', Parent, '" -> "', UUID, '";\n'])
 	).
 graphviz_object(Parent, Object) :-
 	Object = 1 + X,
 	uuid(UUID),
-	maplist(write, ['    "', UUID, '" [label = "1+"];\n']),
+	maplist(write, ['        "', UUID, '" [label = "1+" fillcolor = "navyblue" color = "black" fontcolor = "white"];\n']),
 	(
 		Parent = null
 	->
 		true
 	;
-		maplist(write, ['    "', Parent, '" -> "', UUID, '";\n'])
+		maplist(write, ['        "', Parent, '" -> "', UUID, '";\n'])
 	),
 	graphviz_object(UUID, X).
 
