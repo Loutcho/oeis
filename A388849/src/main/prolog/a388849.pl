@@ -156,7 +156,7 @@ delta_a(N, BN) :-
 	a(M, AM),
 	BN is AN - AM.
 
-% 18 is the first N such that a(N) is not equal to A130841(N). Why?
+% 18 is the first N such that a(N) is not equal to A130841(N).
 of_interest_18 :-
 	tell('18.txt'),
 	forall(
