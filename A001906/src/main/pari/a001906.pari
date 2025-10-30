@@ -1,0 +1,7 @@
+\\ a convoluted way of getting A001906 : a(n) = F(2n)
+f(P)=1+P
+g(P)=x*P
+h(P)=y*P
+ins(~L,e)=e=simplify(e);my(n=setsearch(L,e,1));if(n!=0,listinsert(~L,e,n));listsort(~L,1);
+evolve(L)=my(LL=List(),P);for(i=1,#L,P=L[i];ins(~LL,f(P));ins(~LL,g(P));ins(~LL,h(P)));LL
+main(nmax)=my(n=1,L=List());ins(~L,1);print1("a(",n,")=",#L,"\n");while(n<nmax,n++;L=evolve(L);print1("a(",n,")=",#L,"\n"));
