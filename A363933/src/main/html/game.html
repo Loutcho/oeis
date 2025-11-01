@@ -18,7 +18,7 @@
 				vertical-align:middle;
 			}
 			.degrade {
-				background-color: white;
+				background-color: #887777;
 				border: 0px solid black;
 				border-radius: 18px 10px 0px 10px;
 				height:32px;
@@ -26,1371 +26,1396 @@
 				text-align:center;
 				vertical-align:middle;
 				padding:0px;
-				font-color: red;
 				font-size: 16px;
 				font-weight: 800;
 			}
 			.elevate {
-				background-color: #40B0FF;
+				background-color: #777788;
 				border: 0px solid black;
-				border-radius: 0px 5px 9px 5px;
-				height: 16px;
-				width: 16px;
+				border-radius: 0px 10px 18px 10px;
+				height: 32px;
+				width: 32px;
 				text-align:center;
 				vertical-align:middle;
 				padding:0px;
-				font-size: 9px;
+				font-size: 16px;
+				font-weight: 800;
 			}
 		</style>
 		<script>
+		const COLOR_ACTIVABLE_DEGRADE = "#FF5555";
+		const COLOR_NOT_ACTIVABLE_DEGRADE = "#887777";
+		const COLOR_ACTIVABLE_ELEVATE = "#5555FF";
+		const COLOR_NOT_ACTIVABLE_ELEVATE = "#777788";
+		function s(v) {
+			return (v == 0 ? "" : v);
+		}
+		function init() {
+			document.getElementById("d_0_0").style.backgroundColor = COLOR_ACTIVABLE_DEGRADE;
+		}
+		function update_background_degrade(i, j) {
+			if (i < 0 || j < 0) { return; }
+			let p = document.getElementById("d_" + i + "_" + j);
+			if (p == null) { return; }
+			p.style.backgroundColor = (p.value > 0 ? COLOR_ACTIVABLE_DEGRADE : COLOR_NOT_ACTIVABLE_DEGRADE);
+		}
+		function update_background_elevate(i, j) {
+			if (i < 0 || j < 0) { return; }
+			let ii = i + 1;
+			let jj = j + 1;
+			let q = document.getElementById("e_" + i + "_" + j);
+			let p_sud = document.getElementById("d_" + ii + "_" + j);
+			let p_est = document.getElementById("d_" + i + "_" + jj);
+			if (q == null || p_sud == null | p_est) { return; }
+			q.style.backgroundColor = ((p_sud.value > 0 && p_est.value > 0) ? COLOR_ACTIVABLE_ELEVATE : COLOR_NOT_ACTIVABLE_ELEVATE);
+		}
 		function degrade(id) {
 			const t = id.split("_")
 			const i = parseInt(t[1]);
 			const j = parseInt(t[2]);
-			const ii = i + 1;
-			const jj = j + 1;
-			const x = document.getElementById(id);
-			const s = document.getElementById("q_" + ii + "_" + j);
-			const e = document.getElementById("q_" + i + "_" + jj);
-			let qx = x.value;
-			let qs = s.value;
-			let qe = e.value;
-			let movedQuantity = (event.shiftKey == true ? (+qx) : 1);
-			if (qx > 0) {
-				qx = (+qx) - movedQuantity;
-				if (qx == 0) { qx = ""; }
-				x.value = qx;
-				qs = (+qs) + movedQuantity;
-				qe = (+qe) + movedQuantity;
-				s.value = qs;
-				e.value = qe;
+			const p = document.getElementById(id);
+			const q = document.getElementById("e_" + i + "_" + j);
+			const p_sud = document.getElementById("d_" + (i + 1) + "_" + j);
+			const p_est = document.getElementById("d_" + i + "_" + (j + 1));
+			let movedQuantity = (event.shiftKey == true ? (+ p.value) : 1);
+			if (p.value > 0) {
+				p.value = s((+ p.value) - movedQuantity);
+				q.value = s((+ q.value) + movedQuantity);
+				p_sud.value = s((+ p_sud.value) + movedQuantity);
+				p_est.value = s((+ p_est.value) + movedQuantity);
+				update_background_degrade(i, j);
+				update_background_degrade(i + 1, j);
+				update_background_degrade(i, j + 1);
+				update_background_elevate(i, j);
+				update_background_elevate(i - 1, j);
+				update_background_elevate(i - 1, j + 1);
+				update_background_elevate(i + 1, j - 1);
+				update_background_elevate(i, j - 1);
 			}
 		}
 		function elevate(id) {
 			const t = id.split("_");
 			const i = parseInt(t[1]);
 			const j = parseInt(t[2]);
-			const ii = i + 1;
-			const jj = j + 1;
-			const x = document.getElementById("q_" + i + "_" + j);
-			const s = document.getElementById("q_" + ii + "_" + j);
-			const e = document.getElementById("q_" + i + "_" + jj);
-			qx = x.value;
-			qs = s.value;
-			qe = e.value;
-			let movedQuantity = (event.shiftKey == true ? Math.min(+qs, +qe) : 1);
-			if ((qs > 0) && (qe > 0)) {
-				qx = (+qx) + movedQuantity;
-				qs = (+qs) - movedQuantity;
-				qe = (+qe) - movedQuantity;
-				if (qs == 0) { qs = ""; }
-				if (qe == 0) { qe = ""; }
-				x.value = qx;
-				s.value = qs;
-				e.value = qe;
+			const pp = document.getElementById("d_" + i + "_" + j);
+			const sud = document.getElementById("d_" + (i + 1) + "_" + j);
+			const est = document.getElementById("d_" + i + "_" + (j + 1));
+			const qq = document.getElementById("e_" + i + "_" + j);
+			let movedQuantity = (event.shiftKey == true ? Math.min(+ sud.value, + est.value) : 1);
+			if ((sud.value > 0) && (est.value > 0)) {
+				pp.value = s((+ pp.value) + movedQuantity);
+				sud.value = s((+ sud.value) - movedQuantity);
+				est.value = s((+ est.value) - movedQuantity);
+				qq.value = s((+ qq.value) - movedQuantity);
+				update_background_degrade(i, j);
+				update_background_degrade(i + 1, j);
+				update_background_degrade(i, j + 1);
+				update_background_elevate(i, j);
+				update_background_elevate(i - 1, j);
+				update_background_elevate(i - 1, j + 1);
+				update_background_elevate(i + 1, j - 1);
+				update_background_elevate(i, j - 1);
 			}
 		}
 		</script>
 	</head>
-	<body>
-<table>
-	<tr>
-		<th></th>
-		<th>0</th>
-		<th></th>
-		<th>1</th>
-		<th></th>
-		<th>2</th>
-		<th></th>
-		<th>3</th>
-		<th></th>
-		<th>4</th>
-		<th></th>
-		<th>5</th>
-		<th></th>
-		<th>6</th>
-		<th></th>
-		<th>7</th>
-		<th></th>
-		<th>8</th>
-		<th></th>
-		<th>9</th>
-		<th></th>
-		<th>10</th>
-		<th></th>
-		<th>11</th>
-		<th></th>
-		<th>12</th>
-		<th></th>
-		<th>13</th>
-		<th></th>
-		<th>14</th>
-		<th></th>
-		<th>15</th>
-		<th></th>
-		<th>16</th>
-		<th></th>
-	</tr>
-	<tr>
-		<th>0</th>
-		<td><input type="button" class="degrade" id="q_0_0" onclick="degrade('q_0_0')" value="1" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_1" onclick="degrade('q_0_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_2" onclick="degrade('q_0_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_3" onclick="degrade('q_0_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_4" onclick="degrade('q_0_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_5" onclick="degrade('q_0_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_6" onclick="degrade('q_0_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_7" onclick="degrade('q_0_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_8" onclick="degrade('q_0_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_9" onclick="degrade('q_0_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_10" onclick="degrade('q_0_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_11" onclick="degrade('q_0_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_12" onclick="degrade('q_0_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_13" onclick="degrade('q_0_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_14" onclick="degrade('q_0_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_15" onclick="degrade('q_0_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_0_16" onclick="degrade('q_0_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_0" onclick="elevate('e_0_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_1" onclick="elevate('e_0_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_2" onclick="elevate('e_0_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_3" onclick="elevate('e_0_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_4" onclick="elevate('e_0_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_5" onclick="elevate('e_0_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_6" onclick="elevate('e_0_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_7" onclick="elevate('e_0_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_8" onclick="elevate('e_0_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_9" onclick="elevate('e_0_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_10" onclick="elevate('e_0_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_11" onclick="elevate('e_0_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_12" onclick="elevate('e_0_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_13" onclick="elevate('e_0_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_14" onclick="elevate('e_0_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_15" onclick="elevate('e_0_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_0_16" onclick="elevate('e_0_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>1</th>
-		<td><input type="button" class="degrade" id="q_1_0" onclick="degrade('q_1_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_1" onclick="degrade('q_1_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_2" onclick="degrade('q_1_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_3" onclick="degrade('q_1_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_4" onclick="degrade('q_1_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_5" onclick="degrade('q_1_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_6" onclick="degrade('q_1_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_7" onclick="degrade('q_1_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_8" onclick="degrade('q_1_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_9" onclick="degrade('q_1_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_10" onclick="degrade('q_1_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_11" onclick="degrade('q_1_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_12" onclick="degrade('q_1_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_13" onclick="degrade('q_1_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_14" onclick="degrade('q_1_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_15" onclick="degrade('q_1_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_1_16" onclick="degrade('q_1_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_0" onclick="elevate('e_1_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_1" onclick="elevate('e_1_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_2" onclick="elevate('e_1_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_3" onclick="elevate('e_1_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_4" onclick="elevate('e_1_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_5" onclick="elevate('e_1_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_6" onclick="elevate('e_1_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_7" onclick="elevate('e_1_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_8" onclick="elevate('e_1_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_9" onclick="elevate('e_1_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_10" onclick="elevate('e_1_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_11" onclick="elevate('e_1_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_12" onclick="elevate('e_1_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_13" onclick="elevate('e_1_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_14" onclick="elevate('e_1_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_15" onclick="elevate('e_1_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_1_16" onclick="elevate('e_1_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>2</th>
-		<td><input type="button" class="degrade" id="q_2_0" onclick="degrade('q_2_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_1" onclick="degrade('q_2_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_2" onclick="degrade('q_2_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_3" onclick="degrade('q_2_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_4" onclick="degrade('q_2_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_5" onclick="degrade('q_2_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_6" onclick="degrade('q_2_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_7" onclick="degrade('q_2_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_8" onclick="degrade('q_2_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_9" onclick="degrade('q_2_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_10" onclick="degrade('q_2_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_11" onclick="degrade('q_2_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_12" onclick="degrade('q_2_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_13" onclick="degrade('q_2_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_14" onclick="degrade('q_2_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_15" onclick="degrade('q_2_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_2_16" onclick="degrade('q_2_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_0" onclick="elevate('e_2_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_1" onclick="elevate('e_2_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_2" onclick="elevate('e_2_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_3" onclick="elevate('e_2_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_4" onclick="elevate('e_2_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_5" onclick="elevate('e_2_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_6" onclick="elevate('e_2_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_7" onclick="elevate('e_2_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_8" onclick="elevate('e_2_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_9" onclick="elevate('e_2_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_10" onclick="elevate('e_2_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_11" onclick="elevate('e_2_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_12" onclick="elevate('e_2_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_13" onclick="elevate('e_2_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_14" onclick="elevate('e_2_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_15" onclick="elevate('e_2_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_2_16" onclick="elevate('e_2_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>3</th>
-		<td><input type="button" class="degrade" id="q_3_0" onclick="degrade('q_3_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_1" onclick="degrade('q_3_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_2" onclick="degrade('q_3_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_3" onclick="degrade('q_3_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_4" onclick="degrade('q_3_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_5" onclick="degrade('q_3_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_6" onclick="degrade('q_3_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_7" onclick="degrade('q_3_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_8" onclick="degrade('q_3_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_9" onclick="degrade('q_3_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_10" onclick="degrade('q_3_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_11" onclick="degrade('q_3_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_12" onclick="degrade('q_3_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_13" onclick="degrade('q_3_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_14" onclick="degrade('q_3_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_15" onclick="degrade('q_3_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_3_16" onclick="degrade('q_3_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_0" onclick="elevate('e_3_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_1" onclick="elevate('e_3_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_2" onclick="elevate('e_3_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_3" onclick="elevate('e_3_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_4" onclick="elevate('e_3_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_5" onclick="elevate('e_3_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_6" onclick="elevate('e_3_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_7" onclick="elevate('e_3_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_8" onclick="elevate('e_3_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_9" onclick="elevate('e_3_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_10" onclick="elevate('e_3_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_11" onclick="elevate('e_3_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_12" onclick="elevate('e_3_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_13" onclick="elevate('e_3_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_14" onclick="elevate('e_3_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_15" onclick="elevate('e_3_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_3_16" onclick="elevate('e_3_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>4</th>
-		<td><input type="button" class="degrade" id="q_4_0" onclick="degrade('q_4_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_1" onclick="degrade('q_4_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_2" onclick="degrade('q_4_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_3" onclick="degrade('q_4_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_4" onclick="degrade('q_4_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_5" onclick="degrade('q_4_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_6" onclick="degrade('q_4_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_7" onclick="degrade('q_4_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_8" onclick="degrade('q_4_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_9" onclick="degrade('q_4_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_10" onclick="degrade('q_4_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_11" onclick="degrade('q_4_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_12" onclick="degrade('q_4_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_13" onclick="degrade('q_4_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_14" onclick="degrade('q_4_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_15" onclick="degrade('q_4_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_4_16" onclick="degrade('q_4_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_0" onclick="elevate('e_4_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_1" onclick="elevate('e_4_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_2" onclick="elevate('e_4_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_3" onclick="elevate('e_4_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_4" onclick="elevate('e_4_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_5" onclick="elevate('e_4_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_6" onclick="elevate('e_4_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_7" onclick="elevate('e_4_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_8" onclick="elevate('e_4_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_9" onclick="elevate('e_4_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_10" onclick="elevate('e_4_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_11" onclick="elevate('e_4_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_12" onclick="elevate('e_4_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_13" onclick="elevate('e_4_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_14" onclick="elevate('e_4_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_15" onclick="elevate('e_4_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_4_16" onclick="elevate('e_4_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>5</th>
-		<td><input type="button" class="degrade" id="q_5_0" onclick="degrade('q_5_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_1" onclick="degrade('q_5_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_2" onclick="degrade('q_5_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_3" onclick="degrade('q_5_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_4" onclick="degrade('q_5_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_5" onclick="degrade('q_5_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_6" onclick="degrade('q_5_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_7" onclick="degrade('q_5_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_8" onclick="degrade('q_5_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_9" onclick="degrade('q_5_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_10" onclick="degrade('q_5_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_11" onclick="degrade('q_5_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_12" onclick="degrade('q_5_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_13" onclick="degrade('q_5_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_14" onclick="degrade('q_5_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_15" onclick="degrade('q_5_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_5_16" onclick="degrade('q_5_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_0" onclick="elevate('e_5_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_1" onclick="elevate('e_5_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_2" onclick="elevate('e_5_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_3" onclick="elevate('e_5_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_4" onclick="elevate('e_5_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_5" onclick="elevate('e_5_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_6" onclick="elevate('e_5_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_7" onclick="elevate('e_5_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_8" onclick="elevate('e_5_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_9" onclick="elevate('e_5_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_10" onclick="elevate('e_5_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_11" onclick="elevate('e_5_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_12" onclick="elevate('e_5_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_13" onclick="elevate('e_5_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_14" onclick="elevate('e_5_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_15" onclick="elevate('e_5_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_5_16" onclick="elevate('e_5_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>6</th>
-		<td><input type="button" class="degrade" id="q_6_0" onclick="degrade('q_6_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_1" onclick="degrade('q_6_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_2" onclick="degrade('q_6_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_3" onclick="degrade('q_6_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_4" onclick="degrade('q_6_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_5" onclick="degrade('q_6_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_6" onclick="degrade('q_6_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_7" onclick="degrade('q_6_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_8" onclick="degrade('q_6_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_9" onclick="degrade('q_6_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_10" onclick="degrade('q_6_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_11" onclick="degrade('q_6_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_12" onclick="degrade('q_6_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_13" onclick="degrade('q_6_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_14" onclick="degrade('q_6_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_15" onclick="degrade('q_6_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_6_16" onclick="degrade('q_6_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_0" onclick="elevate('e_6_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_1" onclick="elevate('e_6_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_2" onclick="elevate('e_6_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_3" onclick="elevate('e_6_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_4" onclick="elevate('e_6_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_5" onclick="elevate('e_6_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_6" onclick="elevate('e_6_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_7" onclick="elevate('e_6_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_8" onclick="elevate('e_6_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_9" onclick="elevate('e_6_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_10" onclick="elevate('e_6_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_11" onclick="elevate('e_6_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_12" onclick="elevate('e_6_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_13" onclick="elevate('e_6_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_14" onclick="elevate('e_6_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_15" onclick="elevate('e_6_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_6_16" onclick="elevate('e_6_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>7</th>
-		<td><input type="button" class="degrade" id="q_7_0" onclick="degrade('q_7_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_1" onclick="degrade('q_7_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_2" onclick="degrade('q_7_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_3" onclick="degrade('q_7_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_4" onclick="degrade('q_7_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_5" onclick="degrade('q_7_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_6" onclick="degrade('q_7_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_7" onclick="degrade('q_7_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_8" onclick="degrade('q_7_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_9" onclick="degrade('q_7_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_10" onclick="degrade('q_7_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_11" onclick="degrade('q_7_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_12" onclick="degrade('q_7_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_13" onclick="degrade('q_7_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_14" onclick="degrade('q_7_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_15" onclick="degrade('q_7_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_7_16" onclick="degrade('q_7_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_0" onclick="elevate('e_7_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_1" onclick="elevate('e_7_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_2" onclick="elevate('e_7_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_3" onclick="elevate('e_7_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_4" onclick="elevate('e_7_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_5" onclick="elevate('e_7_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_6" onclick="elevate('e_7_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_7" onclick="elevate('e_7_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_8" onclick="elevate('e_7_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_9" onclick="elevate('e_7_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_10" onclick="elevate('e_7_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_11" onclick="elevate('e_7_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_12" onclick="elevate('e_7_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_13" onclick="elevate('e_7_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_14" onclick="elevate('e_7_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_15" onclick="elevate('e_7_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_7_16" onclick="elevate('e_7_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>8</th>
-		<td><input type="button" class="degrade" id="q_8_0" onclick="degrade('q_8_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_1" onclick="degrade('q_8_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_2" onclick="degrade('q_8_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_3" onclick="degrade('q_8_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_4" onclick="degrade('q_8_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_5" onclick="degrade('q_8_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_6" onclick="degrade('q_8_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_7" onclick="degrade('q_8_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_8" onclick="degrade('q_8_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_9" onclick="degrade('q_8_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_10" onclick="degrade('q_8_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_11" onclick="degrade('q_8_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_12" onclick="degrade('q_8_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_13" onclick="degrade('q_8_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_14" onclick="degrade('q_8_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_15" onclick="degrade('q_8_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_8_16" onclick="degrade('q_8_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_0" onclick="elevate('e_8_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_1" onclick="elevate('e_8_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_2" onclick="elevate('e_8_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_3" onclick="elevate('e_8_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_4" onclick="elevate('e_8_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_5" onclick="elevate('e_8_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_6" onclick="elevate('e_8_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_7" onclick="elevate('e_8_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_8" onclick="elevate('e_8_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_9" onclick="elevate('e_8_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_10" onclick="elevate('e_8_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_11" onclick="elevate('e_8_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_12" onclick="elevate('e_8_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_13" onclick="elevate('e_8_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_14" onclick="elevate('e_8_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_15" onclick="elevate('e_8_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_8_16" onclick="elevate('e_8_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>9</th>
-		<td><input type="button" class="degrade" id="q_9_0" onclick="degrade('q_9_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_1" onclick="degrade('q_9_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_2" onclick="degrade('q_9_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_3" onclick="degrade('q_9_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_4" onclick="degrade('q_9_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_5" onclick="degrade('q_9_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_6" onclick="degrade('q_9_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_7" onclick="degrade('q_9_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_8" onclick="degrade('q_9_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_9" onclick="degrade('q_9_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_10" onclick="degrade('q_9_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_11" onclick="degrade('q_9_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_12" onclick="degrade('q_9_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_13" onclick="degrade('q_9_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_14" onclick="degrade('q_9_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_15" onclick="degrade('q_9_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_9_16" onclick="degrade('q_9_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_0" onclick="elevate('e_9_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_1" onclick="elevate('e_9_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_2" onclick="elevate('e_9_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_3" onclick="elevate('e_9_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_4" onclick="elevate('e_9_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_5" onclick="elevate('e_9_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_6" onclick="elevate('e_9_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_7" onclick="elevate('e_9_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_8" onclick="elevate('e_9_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_9" onclick="elevate('e_9_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_10" onclick="elevate('e_9_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_11" onclick="elevate('e_9_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_12" onclick="elevate('e_9_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_13" onclick="elevate('e_9_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_14" onclick="elevate('e_9_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_15" onclick="elevate('e_9_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_9_16" onclick="elevate('e_9_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>10</th>
-		<td><input type="button" class="degrade" id="q_10_0" onclick="degrade('q_10_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_1" onclick="degrade('q_10_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_2" onclick="degrade('q_10_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_3" onclick="degrade('q_10_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_4" onclick="degrade('q_10_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_5" onclick="degrade('q_10_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_6" onclick="degrade('q_10_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_7" onclick="degrade('q_10_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_8" onclick="degrade('q_10_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_9" onclick="degrade('q_10_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_10" onclick="degrade('q_10_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_11" onclick="degrade('q_10_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_12" onclick="degrade('q_10_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_13" onclick="degrade('q_10_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_14" onclick="degrade('q_10_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_15" onclick="degrade('q_10_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_10_16" onclick="degrade('q_10_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_0" onclick="elevate('e_10_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_1" onclick="elevate('e_10_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_2" onclick="elevate('e_10_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_3" onclick="elevate('e_10_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_4" onclick="elevate('e_10_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_5" onclick="elevate('e_10_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_6" onclick="elevate('e_10_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_7" onclick="elevate('e_10_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_8" onclick="elevate('e_10_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_9" onclick="elevate('e_10_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_10" onclick="elevate('e_10_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_11" onclick="elevate('e_10_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_12" onclick="elevate('e_10_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_13" onclick="elevate('e_10_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_14" onclick="elevate('e_10_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_15" onclick="elevate('e_10_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_10_16" onclick="elevate('e_10_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>11</th>
-		<td><input type="button" class="degrade" id="q_11_0" onclick="degrade('q_11_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_1" onclick="degrade('q_11_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_2" onclick="degrade('q_11_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_3" onclick="degrade('q_11_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_4" onclick="degrade('q_11_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_5" onclick="degrade('q_11_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_6" onclick="degrade('q_11_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_7" onclick="degrade('q_11_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_8" onclick="degrade('q_11_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_9" onclick="degrade('q_11_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_10" onclick="degrade('q_11_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_11" onclick="degrade('q_11_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_12" onclick="degrade('q_11_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_13" onclick="degrade('q_11_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_14" onclick="degrade('q_11_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_15" onclick="degrade('q_11_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_11_16" onclick="degrade('q_11_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_0" onclick="elevate('e_11_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_1" onclick="elevate('e_11_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_2" onclick="elevate('e_11_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_3" onclick="elevate('e_11_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_4" onclick="elevate('e_11_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_5" onclick="elevate('e_11_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_6" onclick="elevate('e_11_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_7" onclick="elevate('e_11_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_8" onclick="elevate('e_11_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_9" onclick="elevate('e_11_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_10" onclick="elevate('e_11_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_11" onclick="elevate('e_11_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_12" onclick="elevate('e_11_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_13" onclick="elevate('e_11_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_14" onclick="elevate('e_11_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_15" onclick="elevate('e_11_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_11_16" onclick="elevate('e_11_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>12</th>
-		<td><input type="button" class="degrade" id="q_12_0" onclick="degrade('q_12_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_1" onclick="degrade('q_12_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_2" onclick="degrade('q_12_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_3" onclick="degrade('q_12_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_4" onclick="degrade('q_12_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_5" onclick="degrade('q_12_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_6" onclick="degrade('q_12_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_7" onclick="degrade('q_12_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_8" onclick="degrade('q_12_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_9" onclick="degrade('q_12_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_10" onclick="degrade('q_12_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_11" onclick="degrade('q_12_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_12" onclick="degrade('q_12_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_13" onclick="degrade('q_12_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_14" onclick="degrade('q_12_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_15" onclick="degrade('q_12_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_12_16" onclick="degrade('q_12_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_0" onclick="elevate('e_12_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_1" onclick="elevate('e_12_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_2" onclick="elevate('e_12_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_3" onclick="elevate('e_12_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_4" onclick="elevate('e_12_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_5" onclick="elevate('e_12_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_6" onclick="elevate('e_12_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_7" onclick="elevate('e_12_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_8" onclick="elevate('e_12_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_9" onclick="elevate('e_12_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_10" onclick="elevate('e_12_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_11" onclick="elevate('e_12_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_12" onclick="elevate('e_12_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_13" onclick="elevate('e_12_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_14" onclick="elevate('e_12_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_15" onclick="elevate('e_12_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_12_16" onclick="elevate('e_12_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>13</th>
-		<td><input type="button" class="degrade" id="q_13_0" onclick="degrade('q_13_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_1" onclick="degrade('q_13_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_2" onclick="degrade('q_13_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_3" onclick="degrade('q_13_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_4" onclick="degrade('q_13_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_5" onclick="degrade('q_13_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_6" onclick="degrade('q_13_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_7" onclick="degrade('q_13_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_8" onclick="degrade('q_13_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_9" onclick="degrade('q_13_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_10" onclick="degrade('q_13_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_11" onclick="degrade('q_13_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_12" onclick="degrade('q_13_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_13" onclick="degrade('q_13_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_14" onclick="degrade('q_13_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_15" onclick="degrade('q_13_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_13_16" onclick="degrade('q_13_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_0" onclick="elevate('e_13_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_1" onclick="elevate('e_13_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_2" onclick="elevate('e_13_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_3" onclick="elevate('e_13_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_4" onclick="elevate('e_13_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_5" onclick="elevate('e_13_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_6" onclick="elevate('e_13_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_7" onclick="elevate('e_13_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_8" onclick="elevate('e_13_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_9" onclick="elevate('e_13_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_10" onclick="elevate('e_13_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_11" onclick="elevate('e_13_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_12" onclick="elevate('e_13_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_13" onclick="elevate('e_13_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_14" onclick="elevate('e_13_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_15" onclick="elevate('e_13_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_13_16" onclick="elevate('e_13_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>14</th>
-		<td><input type="button" class="degrade" id="q_14_0" onclick="degrade('q_14_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_1" onclick="degrade('q_14_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_2" onclick="degrade('q_14_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_3" onclick="degrade('q_14_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_4" onclick="degrade('q_14_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_5" onclick="degrade('q_14_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_6" onclick="degrade('q_14_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_7" onclick="degrade('q_14_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_8" onclick="degrade('q_14_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_9" onclick="degrade('q_14_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_10" onclick="degrade('q_14_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_11" onclick="degrade('q_14_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_12" onclick="degrade('q_14_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_13" onclick="degrade('q_14_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_14" onclick="degrade('q_14_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_15" onclick="degrade('q_14_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_14_16" onclick="degrade('q_14_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_0" onclick="elevate('e_14_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_1" onclick="elevate('e_14_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_2" onclick="elevate('e_14_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_3" onclick="elevate('e_14_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_4" onclick="elevate('e_14_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_5" onclick="elevate('e_14_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_6" onclick="elevate('e_14_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_7" onclick="elevate('e_14_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_8" onclick="elevate('e_14_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_9" onclick="elevate('e_14_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_10" onclick="elevate('e_14_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_11" onclick="elevate('e_14_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_12" onclick="elevate('e_14_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_13" onclick="elevate('e_14_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_14" onclick="elevate('e_14_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_15" onclick="elevate('e_14_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_14_16" onclick="elevate('e_14_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>15</th>
-		<td><input type="button" class="degrade" id="q_15_0" onclick="degrade('q_15_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_1" onclick="degrade('q_15_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_2" onclick="degrade('q_15_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_3" onclick="degrade('q_15_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_4" onclick="degrade('q_15_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_5" onclick="degrade('q_15_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_6" onclick="degrade('q_15_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_7" onclick="degrade('q_15_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_8" onclick="degrade('q_15_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_9" onclick="degrade('q_15_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_10" onclick="degrade('q_15_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_11" onclick="degrade('q_15_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_12" onclick="degrade('q_15_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_13" onclick="degrade('q_15_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_14" onclick="degrade('q_15_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_15" onclick="degrade('q_15_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_15_16" onclick="degrade('q_15_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_0" onclick="elevate('e_15_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_1" onclick="elevate('e_15_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_2" onclick="elevate('e_15_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_3" onclick="elevate('e_15_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_4" onclick="elevate('e_15_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_5" onclick="elevate('e_15_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_6" onclick="elevate('e_15_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_7" onclick="elevate('e_15_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_8" onclick="elevate('e_15_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_9" onclick="elevate('e_15_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_10" onclick="elevate('e_15_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_11" onclick="elevate('e_15_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_12" onclick="elevate('e_15_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_13" onclick="elevate('e_15_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_14" onclick="elevate('e_15_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_15" onclick="elevate('e_15_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_15_16" onclick="elevate('e_15_16')" value="" /></td>
-	</tr>
-	<tr>
-		<th>16</th>
-		<td><input type="button" class="degrade" id="q_16_0" onclick="degrade('q_16_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_1" onclick="degrade('q_16_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_2" onclick="degrade('q_16_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_3" onclick="degrade('q_16_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_4" onclick="degrade('q_16_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_5" onclick="degrade('q_16_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_6" onclick="degrade('q_16_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_7" onclick="degrade('q_16_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_8" onclick="degrade('q_16_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_9" onclick="degrade('q_16_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_10" onclick="degrade('q_16_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_11" onclick="degrade('q_16_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_12" onclick="degrade('q_16_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_13" onclick="degrade('q_16_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_14" onclick="degrade('q_16_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_15" onclick="degrade('q_16_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="degrade" id="q_16_16" onclick="degrade('q_16_16')" value="" /></td>
-		<td></td>
-	</tr>
-	<tr>
-		<th></th>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_0" onclick="elevate('e_16_0')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_1" onclick="elevate('e_16_1')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_2" onclick="elevate('e_16_2')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_3" onclick="elevate('e_16_3')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_4" onclick="elevate('e_16_4')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_5" onclick="elevate('e_16_5')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_6" onclick="elevate('e_16_6')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_7" onclick="elevate('e_16_7')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_8" onclick="elevate('e_16_8')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_9" onclick="elevate('e_16_9')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_10" onclick="elevate('e_16_10')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_11" onclick="elevate('e_16_11')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_12" onclick="elevate('e_16_12')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_13" onclick="elevate('e_16_13')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_14" onclick="elevate('e_16_14')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_15" onclick="elevate('e_16_15')" value="" /></td>
-		<td></td>
-		<td><input type="button" class="elevate" id="e_16_16" onclick="elevate('e_16_16')" value="" /></td>
-	</tr>
-</table>
-
-
+	<body onload="init()">
+		<table>
+			<tr>
+				<th></th>
+				<th>0</th>
+				<th></th>
+				<th>1</th>
+				<th></th>
+				<th>2</th>
+				<th></th>
+				<th>3</th>
+				<th></th>
+				<th>4</th>
+				<th></th>
+				<th>5</th>
+				<th></th>
+				<th>6</th>
+				<th></th>
+				<th>7</th>
+				<th></th>
+				<th>8</th>
+				<th></th>
+				<th>9</th>
+				<th></th>
+				<th>10</th>
+				<th></th>
+				<th>11</th>
+				<th></th>
+				<th>12</th>
+				<th></th>
+				<th>13</th>
+				<th></th>
+				<th>14</th>
+				<th></th>
+				<th>15</th>
+				<th></th>
+				<th>16</th>
+				<th></th>
+			</tr>
+			<tr>
+				<th>0</th>
+				<td><input type="button" class="degrade" id="d_0_0" onclick="degrade('d_0_0')" value="1" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_1" onclick="degrade('d_0_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_2" onclick="degrade('d_0_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_3" onclick="degrade('d_0_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_4" onclick="degrade('d_0_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_5" onclick="degrade('d_0_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_6" onclick="degrade('d_0_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_7" onclick="degrade('d_0_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_8" onclick="degrade('d_0_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_9" onclick="degrade('d_0_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_10" onclick="degrade('d_0_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_11" onclick="degrade('d_0_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_12" onclick="degrade('d_0_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_13" onclick="degrade('d_0_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_14" onclick="degrade('d_0_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_15" onclick="degrade('d_0_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_0_16" onclick="degrade('d_0_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_0" onclick="elevate('e_0_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_1" onclick="elevate('e_0_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_2" onclick="elevate('e_0_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_3" onclick="elevate('e_0_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_4" onclick="elevate('e_0_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_5" onclick="elevate('e_0_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_6" onclick="elevate('e_0_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_7" onclick="elevate('e_0_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_8" onclick="elevate('e_0_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_9" onclick="elevate('e_0_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_10" onclick="elevate('e_0_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_11" onclick="elevate('e_0_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_12" onclick="elevate('e_0_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_13" onclick="elevate('e_0_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_14" onclick="elevate('e_0_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_15" onclick="elevate('e_0_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_0_16" onclick="elevate('e_0_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>1</th>
+				<td><input type="button" class="degrade" id="d_1_0" onclick="degrade('d_1_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_1" onclick="degrade('d_1_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_2" onclick="degrade('d_1_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_3" onclick="degrade('d_1_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_4" onclick="degrade('d_1_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_5" onclick="degrade('d_1_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_6" onclick="degrade('d_1_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_7" onclick="degrade('d_1_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_8" onclick="degrade('d_1_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_9" onclick="degrade('d_1_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_10" onclick="degrade('d_1_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_11" onclick="degrade('d_1_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_12" onclick="degrade('d_1_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_13" onclick="degrade('d_1_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_14" onclick="degrade('d_1_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_15" onclick="degrade('d_1_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_1_16" onclick="degrade('d_1_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_0" onclick="elevate('e_1_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_1" onclick="elevate('e_1_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_2" onclick="elevate('e_1_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_3" onclick="elevate('e_1_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_4" onclick="elevate('e_1_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_5" onclick="elevate('e_1_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_6" onclick="elevate('e_1_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_7" onclick="elevate('e_1_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_8" onclick="elevate('e_1_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_9" onclick="elevate('e_1_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_10" onclick="elevate('e_1_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_11" onclick="elevate('e_1_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_12" onclick="elevate('e_1_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_13" onclick="elevate('e_1_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_14" onclick="elevate('e_1_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_15" onclick="elevate('e_1_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_1_16" onclick="elevate('e_1_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>2</th>
+				<td><input type="button" class="degrade" id="d_2_0" onclick="degrade('d_2_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_1" onclick="degrade('d_2_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_2" onclick="degrade('d_2_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_3" onclick="degrade('d_2_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_4" onclick="degrade('d_2_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_5" onclick="degrade('d_2_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_6" onclick="degrade('d_2_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_7" onclick="degrade('d_2_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_8" onclick="degrade('d_2_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_9" onclick="degrade('d_2_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_10" onclick="degrade('d_2_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_11" onclick="degrade('d_2_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_12" onclick="degrade('d_2_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_13" onclick="degrade('d_2_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_14" onclick="degrade('d_2_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_15" onclick="degrade('d_2_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_2_16" onclick="degrade('d_2_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_0" onclick="elevate('e_2_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_1" onclick="elevate('e_2_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_2" onclick="elevate('e_2_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_3" onclick="elevate('e_2_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_4" onclick="elevate('e_2_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_5" onclick="elevate('e_2_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_6" onclick="elevate('e_2_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_7" onclick="elevate('e_2_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_8" onclick="elevate('e_2_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_9" onclick="elevate('e_2_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_10" onclick="elevate('e_2_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_11" onclick="elevate('e_2_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_12" onclick="elevate('e_2_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_13" onclick="elevate('e_2_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_14" onclick="elevate('e_2_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_15" onclick="elevate('e_2_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_2_16" onclick="elevate('e_2_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>3</th>
+				<td><input type="button" class="degrade" id="d_3_0" onclick="degrade('d_3_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_1" onclick="degrade('d_3_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_2" onclick="degrade('d_3_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_3" onclick="degrade('d_3_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_4" onclick="degrade('d_3_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_5" onclick="degrade('d_3_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_6" onclick="degrade('d_3_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_7" onclick="degrade('d_3_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_8" onclick="degrade('d_3_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_9" onclick="degrade('d_3_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_10" onclick="degrade('d_3_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_11" onclick="degrade('d_3_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_12" onclick="degrade('d_3_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_13" onclick="degrade('d_3_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_14" onclick="degrade('d_3_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_15" onclick="degrade('d_3_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_3_16" onclick="degrade('d_3_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_0" onclick="elevate('e_3_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_1" onclick="elevate('e_3_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_2" onclick="elevate('e_3_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_3" onclick="elevate('e_3_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_4" onclick="elevate('e_3_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_5" onclick="elevate('e_3_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_6" onclick="elevate('e_3_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_7" onclick="elevate('e_3_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_8" onclick="elevate('e_3_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_9" onclick="elevate('e_3_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_10" onclick="elevate('e_3_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_11" onclick="elevate('e_3_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_12" onclick="elevate('e_3_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_13" onclick="elevate('e_3_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_14" onclick="elevate('e_3_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_15" onclick="elevate('e_3_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_3_16" onclick="elevate('e_3_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>4</th>
+				<td><input type="button" class="degrade" id="d_4_0" onclick="degrade('d_4_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_1" onclick="degrade('d_4_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_2" onclick="degrade('d_4_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_3" onclick="degrade('d_4_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_4" onclick="degrade('d_4_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_5" onclick="degrade('d_4_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_6" onclick="degrade('d_4_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_7" onclick="degrade('d_4_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_8" onclick="degrade('d_4_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_9" onclick="degrade('d_4_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_10" onclick="degrade('d_4_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_11" onclick="degrade('d_4_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_12" onclick="degrade('d_4_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_13" onclick="degrade('d_4_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_14" onclick="degrade('d_4_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_15" onclick="degrade('d_4_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_4_16" onclick="degrade('d_4_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_0" onclick="elevate('e_4_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_1" onclick="elevate('e_4_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_2" onclick="elevate('e_4_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_3" onclick="elevate('e_4_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_4" onclick="elevate('e_4_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_5" onclick="elevate('e_4_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_6" onclick="elevate('e_4_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_7" onclick="elevate('e_4_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_8" onclick="elevate('e_4_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_9" onclick="elevate('e_4_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_10" onclick="elevate('e_4_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_11" onclick="elevate('e_4_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_12" onclick="elevate('e_4_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_13" onclick="elevate('e_4_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_14" onclick="elevate('e_4_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_15" onclick="elevate('e_4_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_4_16" onclick="elevate('e_4_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>5</th>
+				<td><input type="button" class="degrade" id="d_5_0" onclick="degrade('d_5_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_1" onclick="degrade('d_5_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_2" onclick="degrade('d_5_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_3" onclick="degrade('d_5_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_4" onclick="degrade('d_5_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_5" onclick="degrade('d_5_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_6" onclick="degrade('d_5_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_7" onclick="degrade('d_5_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_8" onclick="degrade('d_5_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_9" onclick="degrade('d_5_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_10" onclick="degrade('d_5_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_11" onclick="degrade('d_5_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_12" onclick="degrade('d_5_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_13" onclick="degrade('d_5_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_14" onclick="degrade('d_5_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_15" onclick="degrade('d_5_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_5_16" onclick="degrade('d_5_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_0" onclick="elevate('e_5_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_1" onclick="elevate('e_5_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_2" onclick="elevate('e_5_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_3" onclick="elevate('e_5_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_4" onclick="elevate('e_5_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_5" onclick="elevate('e_5_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_6" onclick="elevate('e_5_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_7" onclick="elevate('e_5_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_8" onclick="elevate('e_5_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_9" onclick="elevate('e_5_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_10" onclick="elevate('e_5_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_11" onclick="elevate('e_5_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_12" onclick="elevate('e_5_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_13" onclick="elevate('e_5_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_14" onclick="elevate('e_5_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_15" onclick="elevate('e_5_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_5_16" onclick="elevate('e_5_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>6</th>
+				<td><input type="button" class="degrade" id="d_6_0" onclick="degrade('d_6_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_1" onclick="degrade('d_6_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_2" onclick="degrade('d_6_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_3" onclick="degrade('d_6_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_4" onclick="degrade('d_6_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_5" onclick="degrade('d_6_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_6" onclick="degrade('d_6_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_7" onclick="degrade('d_6_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_8" onclick="degrade('d_6_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_9" onclick="degrade('d_6_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_10" onclick="degrade('d_6_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_11" onclick="degrade('d_6_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_12" onclick="degrade('d_6_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_13" onclick="degrade('d_6_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_14" onclick="degrade('d_6_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_15" onclick="degrade('d_6_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_6_16" onclick="degrade('d_6_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_0" onclick="elevate('e_6_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_1" onclick="elevate('e_6_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_2" onclick="elevate('e_6_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_3" onclick="elevate('e_6_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_4" onclick="elevate('e_6_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_5" onclick="elevate('e_6_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_6" onclick="elevate('e_6_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_7" onclick="elevate('e_6_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_8" onclick="elevate('e_6_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_9" onclick="elevate('e_6_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_10" onclick="elevate('e_6_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_11" onclick="elevate('e_6_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_12" onclick="elevate('e_6_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_13" onclick="elevate('e_6_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_14" onclick="elevate('e_6_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_15" onclick="elevate('e_6_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_6_16" onclick="elevate('e_6_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>7</th>
+				<td><input type="button" class="degrade" id="d_7_0" onclick="degrade('d_7_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_1" onclick="degrade('d_7_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_2" onclick="degrade('d_7_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_3" onclick="degrade('d_7_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_4" onclick="degrade('d_7_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_5" onclick="degrade('d_7_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_6" onclick="degrade('d_7_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_7" onclick="degrade('d_7_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_8" onclick="degrade('d_7_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_9" onclick="degrade('d_7_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_10" onclick="degrade('d_7_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_11" onclick="degrade('d_7_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_12" onclick="degrade('d_7_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_13" onclick="degrade('d_7_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_14" onclick="degrade('d_7_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_15" onclick="degrade('d_7_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_7_16" onclick="degrade('d_7_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_0" onclick="elevate('e_7_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_1" onclick="elevate('e_7_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_2" onclick="elevate('e_7_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_3" onclick="elevate('e_7_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_4" onclick="elevate('e_7_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_5" onclick="elevate('e_7_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_6" onclick="elevate('e_7_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_7" onclick="elevate('e_7_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_8" onclick="elevate('e_7_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_9" onclick="elevate('e_7_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_10" onclick="elevate('e_7_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_11" onclick="elevate('e_7_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_12" onclick="elevate('e_7_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_13" onclick="elevate('e_7_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_14" onclick="elevate('e_7_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_15" onclick="elevate('e_7_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_7_16" onclick="elevate('e_7_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>8</th>
+				<td><input type="button" class="degrade" id="d_8_0" onclick="degrade('d_8_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_1" onclick="degrade('d_8_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_2" onclick="degrade('d_8_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_3" onclick="degrade('d_8_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_4" onclick="degrade('d_8_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_5" onclick="degrade('d_8_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_6" onclick="degrade('d_8_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_7" onclick="degrade('d_8_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_8" onclick="degrade('d_8_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_9" onclick="degrade('d_8_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_10" onclick="degrade('d_8_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_11" onclick="degrade('d_8_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_12" onclick="degrade('d_8_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_13" onclick="degrade('d_8_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_14" onclick="degrade('d_8_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_15" onclick="degrade('d_8_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_8_16" onclick="degrade('d_8_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_0" onclick="elevate('e_8_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_1" onclick="elevate('e_8_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_2" onclick="elevate('e_8_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_3" onclick="elevate('e_8_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_4" onclick="elevate('e_8_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_5" onclick="elevate('e_8_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_6" onclick="elevate('e_8_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_7" onclick="elevate('e_8_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_8" onclick="elevate('e_8_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_9" onclick="elevate('e_8_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_10" onclick="elevate('e_8_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_11" onclick="elevate('e_8_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_12" onclick="elevate('e_8_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_13" onclick="elevate('e_8_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_14" onclick="elevate('e_8_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_15" onclick="elevate('e_8_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_8_16" onclick="elevate('e_8_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>9</th>
+				<td><input type="button" class="degrade" id="d_9_0" onclick="degrade('d_9_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_1" onclick="degrade('d_9_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_2" onclick="degrade('d_9_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_3" onclick="degrade('d_9_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_4" onclick="degrade('d_9_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_5" onclick="degrade('d_9_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_6" onclick="degrade('d_9_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_7" onclick="degrade('d_9_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_8" onclick="degrade('d_9_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_9" onclick="degrade('d_9_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_10" onclick="degrade('d_9_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_11" onclick="degrade('d_9_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_12" onclick="degrade('d_9_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_13" onclick="degrade('d_9_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_14" onclick="degrade('d_9_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_15" onclick="degrade('d_9_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_9_16" onclick="degrade('d_9_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_0" onclick="elevate('e_9_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_1" onclick="elevate('e_9_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_2" onclick="elevate('e_9_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_3" onclick="elevate('e_9_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_4" onclick="elevate('e_9_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_5" onclick="elevate('e_9_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_6" onclick="elevate('e_9_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_7" onclick="elevate('e_9_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_8" onclick="elevate('e_9_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_9" onclick="elevate('e_9_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_10" onclick="elevate('e_9_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_11" onclick="elevate('e_9_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_12" onclick="elevate('e_9_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_13" onclick="elevate('e_9_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_14" onclick="elevate('e_9_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_15" onclick="elevate('e_9_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_9_16" onclick="elevate('e_9_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>10</th>
+				<td><input type="button" class="degrade" id="d_10_0" onclick="degrade('d_10_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_1" onclick="degrade('d_10_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_2" onclick="degrade('d_10_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_3" onclick="degrade('d_10_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_4" onclick="degrade('d_10_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_5" onclick="degrade('d_10_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_6" onclick="degrade('d_10_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_7" onclick="degrade('d_10_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_8" onclick="degrade('d_10_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_9" onclick="degrade('d_10_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_10" onclick="degrade('d_10_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_11" onclick="degrade('d_10_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_12" onclick="degrade('d_10_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_13" onclick="degrade('d_10_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_14" onclick="degrade('d_10_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_15" onclick="degrade('d_10_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_10_16" onclick="degrade('d_10_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_0" onclick="elevate('e_10_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_1" onclick="elevate('e_10_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_2" onclick="elevate('e_10_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_3" onclick="elevate('e_10_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_4" onclick="elevate('e_10_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_5" onclick="elevate('e_10_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_6" onclick="elevate('e_10_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_7" onclick="elevate('e_10_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_8" onclick="elevate('e_10_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_9" onclick="elevate('e_10_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_10" onclick="elevate('e_10_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_11" onclick="elevate('e_10_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_12" onclick="elevate('e_10_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_13" onclick="elevate('e_10_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_14" onclick="elevate('e_10_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_15" onclick="elevate('e_10_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_10_16" onclick="elevate('e_10_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>11</th>
+				<td><input type="button" class="degrade" id="d_11_0" onclick="degrade('d_11_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_1" onclick="degrade('d_11_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_2" onclick="degrade('d_11_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_3" onclick="degrade('d_11_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_4" onclick="degrade('d_11_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_5" onclick="degrade('d_11_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_6" onclick="degrade('d_11_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_7" onclick="degrade('d_11_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_8" onclick="degrade('d_11_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_9" onclick="degrade('d_11_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_10" onclick="degrade('d_11_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_11" onclick="degrade('d_11_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_12" onclick="degrade('d_11_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_13" onclick="degrade('d_11_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_14" onclick="degrade('d_11_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_15" onclick="degrade('d_11_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_11_16" onclick="degrade('d_11_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_0" onclick="elevate('e_11_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_1" onclick="elevate('e_11_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_2" onclick="elevate('e_11_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_3" onclick="elevate('e_11_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_4" onclick="elevate('e_11_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_5" onclick="elevate('e_11_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_6" onclick="elevate('e_11_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_7" onclick="elevate('e_11_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_8" onclick="elevate('e_11_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_9" onclick="elevate('e_11_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_10" onclick="elevate('e_11_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_11" onclick="elevate('e_11_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_12" onclick="elevate('e_11_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_13" onclick="elevate('e_11_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_14" onclick="elevate('e_11_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_15" onclick="elevate('e_11_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_11_16" onclick="elevate('e_11_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>12</th>
+				<td><input type="button" class="degrade" id="d_12_0" onclick="degrade('d_12_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_1" onclick="degrade('d_12_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_2" onclick="degrade('d_12_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_3" onclick="degrade('d_12_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_4" onclick="degrade('d_12_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_5" onclick="degrade('d_12_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_6" onclick="degrade('d_12_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_7" onclick="degrade('d_12_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_8" onclick="degrade('d_12_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_9" onclick="degrade('d_12_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_10" onclick="degrade('d_12_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_11" onclick="degrade('d_12_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_12" onclick="degrade('d_12_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_13" onclick="degrade('d_12_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_14" onclick="degrade('d_12_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_15" onclick="degrade('d_12_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_12_16" onclick="degrade('d_12_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_0" onclick="elevate('e_12_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_1" onclick="elevate('e_12_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_2" onclick="elevate('e_12_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_3" onclick="elevate('e_12_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_4" onclick="elevate('e_12_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_5" onclick="elevate('e_12_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_6" onclick="elevate('e_12_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_7" onclick="elevate('e_12_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_8" onclick="elevate('e_12_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_9" onclick="elevate('e_12_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_10" onclick="elevate('e_12_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_11" onclick="elevate('e_12_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_12" onclick="elevate('e_12_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_13" onclick="elevate('e_12_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_14" onclick="elevate('e_12_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_15" onclick="elevate('e_12_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_12_16" onclick="elevate('e_12_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>13</th>
+				<td><input type="button" class="degrade" id="d_13_0" onclick="degrade('d_13_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_1" onclick="degrade('d_13_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_2" onclick="degrade('d_13_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_3" onclick="degrade('d_13_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_4" onclick="degrade('d_13_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_5" onclick="degrade('d_13_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_6" onclick="degrade('d_13_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_7" onclick="degrade('d_13_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_8" onclick="degrade('d_13_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_9" onclick="degrade('d_13_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_10" onclick="degrade('d_13_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_11" onclick="degrade('d_13_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_12" onclick="degrade('d_13_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_13" onclick="degrade('d_13_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_14" onclick="degrade('d_13_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_15" onclick="degrade('d_13_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_13_16" onclick="degrade('d_13_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_0" onclick="elevate('e_13_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_1" onclick="elevate('e_13_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_2" onclick="elevate('e_13_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_3" onclick="elevate('e_13_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_4" onclick="elevate('e_13_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_5" onclick="elevate('e_13_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_6" onclick="elevate('e_13_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_7" onclick="elevate('e_13_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_8" onclick="elevate('e_13_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_9" onclick="elevate('e_13_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_10" onclick="elevate('e_13_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_11" onclick="elevate('e_13_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_12" onclick="elevate('e_13_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_13" onclick="elevate('e_13_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_14" onclick="elevate('e_13_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_15" onclick="elevate('e_13_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_13_16" onclick="elevate('e_13_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>14</th>
+				<td><input type="button" class="degrade" id="d_14_0" onclick="degrade('d_14_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_1" onclick="degrade('d_14_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_2" onclick="degrade('d_14_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_3" onclick="degrade('d_14_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_4" onclick="degrade('d_14_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_5" onclick="degrade('d_14_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_6" onclick="degrade('d_14_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_7" onclick="degrade('d_14_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_8" onclick="degrade('d_14_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_9" onclick="degrade('d_14_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_10" onclick="degrade('d_14_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_11" onclick="degrade('d_14_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_12" onclick="degrade('d_14_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_13" onclick="degrade('d_14_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_14" onclick="degrade('d_14_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_15" onclick="degrade('d_14_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_14_16" onclick="degrade('d_14_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_0" onclick="elevate('e_14_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_1" onclick="elevate('e_14_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_2" onclick="elevate('e_14_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_3" onclick="elevate('e_14_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_4" onclick="elevate('e_14_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_5" onclick="elevate('e_14_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_6" onclick="elevate('e_14_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_7" onclick="elevate('e_14_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_8" onclick="elevate('e_14_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_9" onclick="elevate('e_14_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_10" onclick="elevate('e_14_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_11" onclick="elevate('e_14_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_12" onclick="elevate('e_14_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_13" onclick="elevate('e_14_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_14" onclick="elevate('e_14_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_15" onclick="elevate('e_14_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_14_16" onclick="elevate('e_14_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>15</th>
+				<td><input type="button" class="degrade" id="d_15_0" onclick="degrade('d_15_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_1" onclick="degrade('d_15_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_2" onclick="degrade('d_15_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_3" onclick="degrade('d_15_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_4" onclick="degrade('d_15_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_5" onclick="degrade('d_15_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_6" onclick="degrade('d_15_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_7" onclick="degrade('d_15_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_8" onclick="degrade('d_15_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_9" onclick="degrade('d_15_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_10" onclick="degrade('d_15_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_11" onclick="degrade('d_15_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_12" onclick="degrade('d_15_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_13" onclick="degrade('d_15_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_14" onclick="degrade('d_15_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_15" onclick="degrade('d_15_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_15_16" onclick="degrade('d_15_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_0" onclick="elevate('e_15_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_1" onclick="elevate('e_15_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_2" onclick="elevate('e_15_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_3" onclick="elevate('e_15_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_4" onclick="elevate('e_15_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_5" onclick="elevate('e_15_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_6" onclick="elevate('e_15_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_7" onclick="elevate('e_15_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_8" onclick="elevate('e_15_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_9" onclick="elevate('e_15_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_10" onclick="elevate('e_15_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_11" onclick="elevate('e_15_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_12" onclick="elevate('e_15_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_13" onclick="elevate('e_15_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_14" onclick="elevate('e_15_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_15" onclick="elevate('e_15_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_15_16" onclick="elevate('e_15_16')" value="" /></td>
+			</tr>
+			<tr>
+				<th>16</th>
+				<td><input type="button" class="degrade" id="d_16_0" onclick="degrade('d_16_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_1" onclick="degrade('d_16_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_2" onclick="degrade('d_16_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_3" onclick="degrade('d_16_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_4" onclick="degrade('d_16_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_5" onclick="degrade('d_16_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_6" onclick="degrade('d_16_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_7" onclick="degrade('d_16_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_8" onclick="degrade('d_16_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_9" onclick="degrade('d_16_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_10" onclick="degrade('d_16_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_11" onclick="degrade('d_16_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_12" onclick="degrade('d_16_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_13" onclick="degrade('d_16_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_14" onclick="degrade('d_16_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_15" onclick="degrade('d_16_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="degrade" id="d_16_16" onclick="degrade('d_16_16')" value="" /></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th></th>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_0" onclick="elevate('e_16_0')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_1" onclick="elevate('e_16_1')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_2" onclick="elevate('e_16_2')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_3" onclick="elevate('e_16_3')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_4" onclick="elevate('e_16_4')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_5" onclick="elevate('e_16_5')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_6" onclick="elevate('e_16_6')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_7" onclick="elevate('e_16_7')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_8" onclick="elevate('e_16_8')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_9" onclick="elevate('e_16_9')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_10" onclick="elevate('e_16_10')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_11" onclick="elevate('e_16_11')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_12" onclick="elevate('e_16_12')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_13" onclick="elevate('e_16_13')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_14" onclick="elevate('e_16_14')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_15" onclick="elevate('e_16_15')" value="" /></td>
+				<td></td>
+				<td><input type="button" class="elevate" id="e_16_16" onclick="elevate('e_16_16')" value="" /></td>
+			</tr>
+		</table>
 	</body>
 </html>
