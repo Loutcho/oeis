@@ -2,7 +2,10 @@
 	<head>
 		<style>
 			body {
-				background-color: darkgray;
+				background-color: #333333;
+			}
+			table {
+				border-collapse: collapse;
 			}
 			th {
 				background-color: lightgray;
@@ -15,52 +18,52 @@
 				vertical-align:middle;
 			}
 			.degrade {
-			background-color: white;
-			border: 2px solid black;
-			border-radius: 0px;
-			height:32px;
-			width:32px;
-			text-align:center;
-			vertical-align:middle;
-			padding:0px;
-			font-color: red;
-			font-size: 16px;
-			font-weight: 800;
+				background-color: white;
+				border: 0px solid black;
+				border-radius: 18px 10px 0px 10px;
+				height:32px;
+				width:32px;
+				text-align:center;
+				vertical-align:middle;
+				padding:0px;
+				font-color: red;
+				font-size: 16px;
+				font-weight: 800;
 			}
 			.elevate {
-			background-color: #40B0FF;
-			border: 2px solid black;
-			border-radius: 8px;
-			height:16px;
-			width:16px;
-			text-align:center;
-			vertical-align:middle;
-			padding:0px;
-			font-size: 9px;
+				background-color: #40B0FF;
+				border: 0px solid black;
+				border-radius: 0px 5px 9px 5px;
+				height: 16px;
+				width: 16px;
+				text-align:center;
+				vertical-align:middle;
+				padding:0px;
+				font-size: 9px;
 			}
 		</style>
 		<script>
 		function degrade(id) {
-			const x = id;
-			const t = x.split("_")
+			const t = id.split("_")
 			const i = parseInt(t[1]);
 			const j = parseInt(t[2]);
 			const ii = i + 1;
 			const jj = j + 1;
-			const s = "q_" + ii + "_" + j;
-			const e  = "q_" + i + "_" + jj;
-			let qx = document.getElementById(x).value;
-			let qs = document.getElementById(s).value;
-			let qe = document.getElementById(e).value;
-			
+			const x = document.getElementById(id);
+			const s = document.getElementById("q_" + ii + "_" + j);
+			const e = document.getElementById("q_" + i + "_" + jj);
+			let qx = x.value;
+			let qs = s.value;
+			let qe = e.value;
+			let movedQuantity = (event.shiftKey == true ? (+qx) : 1);
 			if (qx > 0) {
-				qx --;
+				qx = (+qx) - movedQuantity;
 				if (qx == 0) { qx = ""; }
-				document.getElementById(x).value = qx;
-				qs ++;
-				qe ++;
-				document.getElementById(s).value = qs;
-				document.getElementById(e).value = qe;
+				x.value = qx;
+				qs = (+qs) + movedQuantity;
+				qe = (+qe) + movedQuantity;
+				s.value = qs;
+				e.value = qe;
 			}
 		}
 		function elevate(id) {
@@ -69,21 +72,22 @@
 			const j = parseInt(t[2]);
 			const ii = i + 1;
 			const jj = j + 1;
-			const x = "q_" + i + "_" + j;
-			const s = "q_" + ii + "_" + j;
-			const e = "q_" + i + "_" + jj;
-			qx = document.getElementById(x).value;
-			qs = document.getElementById(s).value;
-			qe = document.getElementById(e).value;
+			const x = document.getElementById("q_" + i + "_" + j);
+			const s = document.getElementById("q_" + ii + "_" + j);
+			const e = document.getElementById("q_" + i + "_" + jj);
+			qx = x.value;
+			qs = s.value;
+			qe = e.value;
+			let movedQuantity = (event.shiftKey == true ? Math.min(+qs, +qe) : 1);
 			if ((qs > 0) && (qe > 0)) {
-				qx ++;
-				qs --;
-				qe --;
+				qx = (+qx) + movedQuantity;
+				qs = (+qs) - movedQuantity;
+				qe = (+qe) - movedQuantity;
 				if (qs == 0) { qs = ""; }
 				if (qe == 0) { qe = ""; }
-				document.getElementById(x).value = qx;
-				document.getElementById(s).value = qs;
-				document.getElementById(e).value = qe;
+				x.value = qx;
+				s.value = qs;
+				e.value = qe;
 			}
 		}
 		</script>
