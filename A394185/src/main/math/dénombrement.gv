@@ -1,0 +1,53 @@
+digraph G
+{
+	charset="UTF-8";
+	node [shape = "box" style = "filled" fillcolor = "beige"];
+
+	1 [label = "+"];
+	2 [label = "masse 1 en 1ère rangée\n(n + 1)*"];
+	3 [label = "masse 2 en 1ère rangée"];
+	4 [label = "masse 3 en 1ère rangée"];
+	
+	31 [label = "deux 1"]
+	32 [label = "un 2\n(n - 1)*"]
+	
+	311 [label = "deux 1 collés\nn*"];
+	312 [label = "deux 1 non collés\n(binomial(n+1,2) - n)*"];
+	
+	5 [label = "masse 1 en 2ème rangée\n2*"];
+	6 [label = "masse 2 en 2ème rangée"];
+	
+	61 [label = "deux 1\n1*"];
+	
+	7 [label = "masse 1 en 3ème rangée\n2*"];
+	8 [label = "masse 1 en 3ème rangée\n3*"];
+	9 [label = "masse 1 en 3ème rangée\n4*"];
+	
+	10 [label = "masse 1 en 3ème rangée\n2*"];
+	
+	11 [label = "trois 1\nbinomial(n+1,3)*"];
+	12 [label = "un 2 et un 1\n (n-1)*n*"];
+	
+1 -> 2;
+1 -> 3;
+1 -> 4;
+
+3 -> 31;
+3 -> 32;
+31 -> 311;
+31 -> 312;
+
+2 -> 5;
+2 -> 6;
+6 -> 61;
+
+5 -> 7;
+
+311 -> 8;
+312 -> 9;
+
+32 -> 10;
+
+4 -> 11;
+4 -> 12;
+}
